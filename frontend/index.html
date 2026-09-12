@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JanSaarthi AI — Secure Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0E2A3A; --navy-800:#123449; --teal-900:#0B4F4A; --teal-700:#116259; --teal-100:#E4F0EE;
+    --marigold:#E8A33D; --marigold-dark:#C9861F; --bg:#F3F5F6; --card:#FFFFFF; --ink:#1B2733; --ink-soft:#647380; --line:#E3E8EB;
+    --good:#2F8F5B; --good-bg:#E7F5EC; --warn:#C0533E; --warn-bg:#FBEAE5; --amber:#B9820F; --amber-bg:#FBF1DE;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; min-height:100vh; font-family:'Inter',sans-serif; color:var(--ink);
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(232,163,61,0.16), transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, rgba(17,98,89,0.20), transparent 60%),
+      var(--navy);
+    display:flex; align-items:center; justify-content:center; padding:28px 16px;}
+  .wrap{width:100%; max-width:420px;}
+  .brand{display:flex; align-items:center; gap:10px; color:#fff; margin-bottom:18px; justify-content:center;}
+  .brand .logo{width:38px; height:38px; border-radius:11px; background:var(--marigold); display:flex; align-items:center; justify-content:center; font-size:19px;}
+  .brand .name{font-family:'Baloo 2'; font-weight:800; font-size:20px;}
+  .brand .name small{display:block; font-family:'Inter'; font-weight:500; font-size:11.5px; color:#9FC7C0;}
+
+  .card{background:var(--card); border-radius:20px; padding:26px 24px 22px; box-shadow:0 24px 60px rgba(0,0,0,0.35);}
+  .step-title{font-family:'Baloo 2'; font-weight:700; font-size:19px; color:var(--navy); margin:0 0 4px;}
+  .step-sub{font-size:13px; color:var(--ink-soft); margin-bottom:18px; line-height:1.5;}
+
+  .progress{display:flex; gap:6px; margin-bottom:20px;}
+  .progress .seg{flex:1; height:4px; border-radius:999px; background:var(--line);}
+  .progress .seg.done{background:var(--teal-700);}
+
+  .role-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:6px;}
+  .role-card{border:1.5px solid var(--line); border-radius:14px; padding:16px 12px; text-align:center; cursor:pointer; transition:.15s;}
+  .role-card:hover{border-color:var(--teal-700);}
+  .role-card.selected{border-color:var(--teal-700); background:var(--teal-100);}
+  .role-card .ic{font-size:28px; margin-bottom:8px;}
+  .role-card .h{font-weight:700; font-size:14px; color:var(--navy);}
+  .role-card .p{font-size:11.5px; color:var(--ink-soft); margin-top:3px; line-height:1.4;}
+
+  label.field{display:block; margin-bottom:14px;}
+  label.field .lbl{display:block; font-size:12.5px; font-weight:700; color:var(--navy); margin-bottom:6px;}
+  label.field input{width:100%; padding:12px 13px; border-radius:11px; border:1.5px solid var(--line); font-size:14.5px; font-family:inherit; background:#FCFDFD;}
+  label.field input:focus{outline:none; border-color:var(--teal-700);}
+  .field-hint{font-size:11.5px; color:var(--ink-soft); margin-top:5px;}
+
+  .otp-row{display:flex; gap:8px; margin:6px 0 4px;}
+  .otp-row input{width:100%; text-align:center; font-size:19px; font-weight:700; padding:12px 0; border-radius:11px; border:1.5px solid var(--line); font-family:inherit; color:var(--navy);}
+  .otp-row input:focus{outline:none; border-color:var(--teal-700);}
+
+  .btn{width:100%; padding:13px 10px; border-radius:12px; border:none; font-weight:700; font-size:14.5px; cursor:pointer; font-family:inherit;}
+  .btn-primary{background:var(--navy); color:#fff;}
+  .btn-primary:disabled{opacity:.45; cursor:not-allowed;}
+  .btn-ghost{background:transparent; color:var(--navy); border:1.5px solid var(--line); margin-top:8px;}
+  .btn-link{background:none; border:none; color:var(--teal-700); font-weight:700; font-size:12.5px; cursor:pointer; font-family:inherit; padding:6px 0;}
+
+  .error-box{background:var(--warn-bg); color:#8a2f1f; border-radius:10px; padding:10px 12px; font-size:12.5px; font-weight:600; margin-bottom:14px; display:none;}
+  .info-box{background:var(--teal-100); color:#0f3d38; border-radius:10px; padding:10px 12px; font-size:12px; margin-bottom:14px; line-height:1.5;}
+  .lock-box{background:var(--warn-bg); color:#7a2e1f; border-radius:12px; padding:16px; text-align:center; font-size:13.5px; line-height:1.6;}
+
+  .shield-note{display:flex; gap:9px; align-items:flex-start; background:var(--bg); border-radius:11px; padding:11px 12px; margin-top:16px; font-size:12px; color:var(--ink-soft); line-height:1.5;}
+  .shield-note .ic{font-size:16px; flex-shrink:0;}
+
+  .success-wrap{text-align:center; padding:6px 0;}
+  .success-wrap .check{width:56px; height:56px; border-radius:50%; background:var(--good-bg); color:var(--good); font-size:28px; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;}
+
+  .foot{text-align:center; color:#9FC7C0; font-size:11.5px; margin-top:16px;}
+  .back-link{color:var(--ink-soft); font-size:12.5px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; margin-bottom:12px; background:none; border:none; font-family:inherit; padding:0;}
+
+  .tabs{display:flex; gap:6px; background:var(--bg); padding:4px; border-radius:12px; margin-bottom:18px;}
+  .tabs button{flex:1; border:none; background:transparent; padding:9px 6px; border-radius:9px; font-weight:700; font-size:12.5px; color:var(--ink-soft); cursor:pointer; font-family:inherit;}
+  .tabs button.active{background:#fff; color:var(--navy); box-shadow:0 2px 6px rgba(0,0,0,0.08);}
+
+  .row-2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .link-row{text-align:right; margin:-6px 0 14px;}
+  .link-row button{background:none; border:none; color:var(--teal-700); font-weight:700; font-size:12px; cursor:pointer; font-family:inherit; padding:0;}
+  .pw-rules{font-size:11px; color:var(--ink-soft); margin:-8px 0 14px; line-height:1.5;}
+</style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B4F4A">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="logo">🪷</div>
+    <div class="name">JanSaarthi AI<small>Secure sign-in · live backend + real database</small></div>
+  </div>
+
+  <div class="card">
+
+    <!-- STEP: ROLE -->
+    <div class="step" id="step-role">
+      <h1 class="step-title">Who's signing in?</h1>
+      <div class="step-sub">Choose your role — you'll land on different consoles.</div>
+      <div class="role-grid">
+        <div class="role-card" id="role-customer" onclick="pickRole('customer')">
+          <div class="ic">🙋</div>
+          <div class="h">Customer</div>
+          <div class="p">Your JanSaarthi banking app</div>
+        </div>
+        <div class="role-card" id="role-bank" onclick="pickRole('bank')">
+          <div class="ic">🏦</div>
+          <div class="h">Bank officer</div>
+          <div class="p">Officer console & queues</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:18px;" id="role-continue" disabled onclick="goScreen('auth')">Continue</button>
+    </div>
+
+    <!-- SCREEN: SIGN IN / CREATE ACCOUNT / FORGOT — tabs -->
+    <div class="step" id="screen-auth" style="display:none;">
+      <button class="back-link" onclick="goScreen('role')">← Change role</button>
+      <div class="tabs">
+        <button id="tab-signin" class="active" onclick="setTab('signin')">Sign in</button>
+        <button id="tab-register" onclick="setTab('register')">Create account</button>
+        <button id="tab-forgot" onclick="setTab('forgot')">Forgot password</button>
+      </div>
+
+      <!-- SIGN IN FORM -->
+      <div id="pane-signin">
+        <h1 class="step-title" id="signin-title">Enter your details</h1>
+        <div class="step-sub">Password, then a one-time code sent to your real mobile number.</div>
+        <div class="error-box" id="signin-error"></div>
+        <label class="field">
+          <span class="lbl" id="signin-id-label">Registered mobile number</span>
+          <input type="text" id="signin-phone" placeholder="e.g. 98xxxxxxxx" maxlength="10" inputmode="numeric">
+        </label>
+        <label class="field">
+          <span class="lbl">Password</span>
+          <input type="password" id="signin-password" placeholder="Enter password">
+        </label>
+        <div class="link-row"><button onclick="setTab('forgot')">Forgot password?</button></div>
+        <button class="btn btn-primary" id="signin-submit" onclick="doLogin()">Continue</button>
+        <div class="lock-box" id="signin-lock" style="display:none; margin-top:14px;"></div>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="pane-register" style="display:none;">
+        <h1 class="step-title">Create your account</h1>
+        <div class="step-sub" id="register-sub">This creates a real row in the customer database and verifies your real phone number by OTP.</div>
+        <div class="error-box" id="register-error"></div>
+        <label class="field">
+          <span class="lbl">Full name</span>
+          <input type="text" id="reg-name" placeholder="As per your ID">
+        </label>
+        <div class="row-2">
+          <label class="field">
+            <span class="lbl">Mobile number</span>
+            <input type="text" id="reg-phone" placeholder="98xxxxxxxx" maxlength="10" inputmode="numeric">
+          </label>
+          <label class="field">
+            <span class="lbl">Email (optional)</span>
+            <input type="email" id="reg-email" placeholder="you@example.com">
+          </label>
+        </div>
+        <label class="field" id="reg-branch-field" style="display:none;">
+          <span class="lbl">Branch</span>
+          <input type="text" id="reg-branch" placeholder="e.g. Ahmedabad Main">
+        </label>
+        <label class="field">
+          <span class="lbl">Password</span>
+          <input type="password" id="reg-password" placeholder="Create a password">
+        </label>
+        <div class="pw-rules">Minimum 8 characters, with an uppercase letter, a lowercase letter and a number.</div>
+        <label class="field">
+          <span class="lbl">Confirm password</span>
+          <input type="password" id="reg-password2" placeholder="Re-enter password">
+        </label>
+        <button class="btn btn-primary" onclick="doRegister()">Create account & send OTP</button>
+      </div>
+
+      <!-- FORGOT PASSWORD: request OTP -->
+      <div id="pane-forgot" style="display:none;">
+        <h1 class="step-title">Reset your password</h1>
+        <div class="step-sub">We'll send a one-time code to your registered mobile number.</div>
+        <div class="error-box" id="forgot-error"></div>
+        <div class="info-box" id="forgot-info" style="display:none;"></div>
+        <label class="field">
+          <span class="lbl">Registered mobile number</span>
+          <input type="text" id="forgot-phone" placeholder="98xxxxxxxx" maxlength="10" inputmode="numeric">
+        </label>
+        <button class="btn btn-primary" onclick="doForgotPassword()">Send OTP</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: OTP (shared for register / login / reset) -->
+    <div class="step" id="screen-otp" style="display:none;">
+      <h1 class="step-title">Verify your phone</h1>
+      <div class="step-sub" id="otp-sub">We've sent a 6-digit code to your registered mobile number.</div>
+      <div class="error-box" id="otp-error"></div>
+
+      <!-- shown only for the reset-password purpose -->
+      <label class="field" id="otp-newpw-field" style="display:none;">
+        <span class="lbl">New password</span>
+        <input type="password" id="otp-newpw" placeholder="Create a new password">
+      </label>
+
+      <div class="otp-row">
+        <input type="text" maxlength="1" class="otp-box" data-i="0">
+        <input type="text" maxlength="1" class="otp-box" data-i="1">
+        <input type="text" maxlength="1" class="otp-box" data-i="2">
+        <input type="text" maxlength="1" class="otp-box" data-i="3">
+        <input type="text" maxlength="1" class="otp-box" data-i="4">
+        <input type="text" maxlength="1" class="otp-box" data-i="5">
+      </div>
+      <div class="field-hint" id="otp-dev-hint">Backend running with SMS_PROVIDER=console prints the OTP in the backend terminal for local testing. Switch to a real provider (see backend README) to receive it as an actual text message.</div>
+      <button class="btn btn-primary" style="margin-top:14px;" id="otp-submit" onclick="submitOtp()">Verify</button>
+      <button class="btn-link" onclick="resendOtp()" id="resend-btn">Resend code</button>
+    </div>
+
+    <!-- SCREEN: SUCCESS -->
+    <div class="step" id="screen-success" style="display:none;">
+      <div class="success-wrap">
+        <div class="check">✓</div>
+        <h1 class="step-title">You're verified</h1>
+        <div class="step-sub" id="success-sub">Welcome to JanSaarthi AI.</div>
+        <a class="btn btn-primary" id="success-link" style="display:block; text-decoration:none; text-align:center; line-height:1.4; padding-top:13px;" href="#">Continue</a>
+      </div>
+    </div>
+
+    <div class="shield-note">
+      <div class="ic">🛡️</div>
+      <div>Passwords are hashed (never stored in plain text) and every OTP is single-use and expires in a few minutes. This screen talks to a real Node.js backend and a real SQLite customer database — see the included README to run it.</div>
+    </div>
+  </div>
+  <div class="foot">JanSaarthi AI · full-stack demo</div>
+</div>
+
+<script src="api.js"></script>
+<script>
+let role = null;           // 'customer' | 'bank'
+let apiRole = null;        // 'customer' | 'officer'
+let activeTab = 'signin';
+let otpPurpose = null;     // 'register' | 'login' | 'reset'
+let otpPhone = null;
+
+function pickRole(r){
+  role = r;
+  apiRole = (r === 'bank') ? 'officer' : 'customer';
+  document.getElementById('role-customer').classList.toggle('selected', r==='customer');
+  document.getElementById('role-bank').classList.toggle('selected', r==='bank');
+  document.getElementById('role-continue').disabled = false;
+  document.getElementById('reg-branch-field').style.display = (r==='bank') ? 'block' : 'none';
+  const idLabel = (r==='bank') ? 'Registered mobile number (officer)' : 'Registered mobile number';
+  document.getElementById('signin-id-label').textContent = idLabel;
+}
+
+function goScreen(name){
+  ['step-role','screen-auth','screen-otp','screen-success'].forEach(id=>{
+    document.getElementById(id).style.display = 'none';
+  });
+  if(name === 'role') document.getElementById('step-role').style.display = 'block';
+  if(name === 'auth') document.getElementById('screen-auth').style.display = 'block';
+  if(name === 'otp') document.getElementById('screen-otp').style.display = 'block';
+  if(name === 'success') document.getElementById('screen-success').style.display = 'block';
+}
+
+function setTab(tab){
+  activeTab = tab;
+  ['signin','register','forgot'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('pane-'+t).style.display = (t===tab) ? 'block' : 'none';
+  });
+  hideError('signin-error'); hideError('register-error'); hideError('forgot-error');
+}
+
+function showError(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError(id){ document.getElementById(id).style.display = 'none'; }
+
+function digitsOnly(v){ return (v||'').replace(/\D/g,''); }
+
+/* ---------------- SIGN IN ---------------- */
+async function doLogin(){
+  hideError('signin-error');
+  document.getElementById('signin-lock').style.display = 'none';
+  const phone = digitsOnly(document.getElementById('signin-phone').value);
+  const password = document.getElementById('signin-password').value;
+  if(phone.length !== 10 || !password){
+    showError('signin-error', 'Enter your 10-digit mobile number and password.');
+    return;
+  }
+  try{
+    const btn = document.getElementById('signin-submit');
+    btn.disabled = true; btn.textContent = 'Checking…';
+    const data = await Api.login({ role: apiRole, phone, password });
+    btn.disabled = false; btn.textContent = 'Continue';
+    if(data.otpRequired){
+      otpPurpose = 'login'; otpPhone = phone;
+      openOtpScreen(`We've sent a 6-digit code to your mobile ${data.phoneMasked}.`);
+    }
+  }catch(err){
+    document.getElementById('signin-submit').disabled = false;
+    document.getElementById('signin-submit').textContent = 'Continue';
+    if(err.status === 423){
+      document.getElementById('signin-lock').style.display = 'block';
+      document.getElementById('signin-lock').textContent = '🔒 ' + err.message;
+    } else {
+      let msg = err.message;
+      if(err.data && typeof err.data.attemptsLeft === 'number'){
+        msg += ` (${err.data.attemptsLeft} attempt(s) left)`;
+      }
+      showError('signin-error', msg);
+    }
+  }
+}
+
+/* ---------------- REGISTER ---------------- */
+async function doRegister(){
+  hideError('register-error');
+  const fullName = document.getElementById('reg-name').value.trim();
+  const phone = digitsOnly(document.getElementById('reg-phone').value);
+  const email = document.getElementById('reg-email').value.trim();
+  const branch = document.getElementById('reg-branch').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const password2 = document.getElementById('reg-password2').value;
+
+  if(password !== password2){
+    showError('register-error', 'Passwords do not match.');
+    return;
+  }
+  try{
+    const data = await Api.register({ role: apiRole, fullName, phone, email, password, branch });
+    otpPurpose = 'register'; otpPhone = phone;
+    openOtpScreen(`We've sent a 6-digit code to your mobile ${data.phoneMasked} to activate your account.`);
+  }catch(err){
+    showError('register-error', err.message);
+  }
+}
+
+/* ---------------- FORGOT PASSWORD ---------------- */
+async function doForgotPassword(){
+  hideError('forgot-error');
+  const phone = digitsOnly(document.getElementById('forgot-phone').value);
+  if(phone.length !== 10){
+    showError('forgot-error', 'Enter a valid 10-digit mobile number.');
+    return;
+  }
+  try{
+    await Api.forgotPassword({ role: apiRole, phone });
+    otpPurpose = 'reset'; otpPhone = phone;
+    openOtpScreen('If that account exists, a 6-digit code has been sent to it. Enter the code and your new password below.');
+  }catch(err){
+    showError('forgot-error', err.message);
+  }
+}
+
+/* ---------------- OTP SCREEN (shared) ---------------- */
+function openOtpScreen(subText){
+  document.getElementById('otp-sub').textContent = subText;
+  document.getElementById('otp-newpw-field').style.display = (otpPurpose === 'reset') ? 'block' : 'none';
+  document.querySelectorAll('.otp-box').forEach(b=>b.value='');
+  document.getElementById('otp-newpw').value = '';
+  hideError('otp-error');
+  goScreen('otp');
+  document.querySelector('.otp-box').focus();
+}
+
+function wireBoxGroup(selector){
+  const boxes = Array.from(document.querySelectorAll(selector));
+  boxes.forEach((b,i)=>{
+    b.addEventListener('input', ()=>{
+      b.value = b.value.replace(/[^0-9]/g,'');
+      if(b.value && boxes[i+1]) boxes[i+1].focus();
+    });
+    b.addEventListener('keydown', (e)=>{
+      if(e.key==='Backspace' && !b.value && boxes[i-1]) boxes[i-1].focus();
+    });
+  });
+}
+wireBoxGroup('.otp-box');
+
+async function submitOtp(){
+  hideError('otp-error');
+  const code = Array.from(document.querySelectorAll('.otp-box')).map(b=>b.value).join('');
+  if(code.length !== 6){
+    showError('otp-error', 'Enter the full 6-digit code.');
+    return;
+  }
+  const btn = document.getElementById('otp-submit');
+  btn.disabled = true; btn.textContent = 'Verifying…';
+  try{
+    if(otpPurpose === 'register'){
+      const data = await Api.verifyRegistrationOtp({ phone: otpPhone, code });
+      onAuthSuccess(data);
+    } else if(otpPurpose === 'login'){
+      const data = await Api.verifyLoginOtp({ role: apiRole, phone: otpPhone, code });
+      onAuthSuccess(data);
+    } else if(otpPurpose === 'reset'){
+      const newPassword = document.getElementById('otp-newpw').value;
+      if(!newPassword){ throw new Error('Enter a new password.'); }
+      await Api.resetPassword({ role: apiRole, phone: otpPhone, code, newPassword });
+      goScreen('success');
+      document.getElementById('success-sub').textContent = 'Your password has been reset. Please sign in with your new password.';
+      const link = document.getElementById('success-link');
+      link.textContent = 'Back to sign in';
+      link.href = '#';
+      link.onclick = (e)=>{ e.preventDefault(); goScreen('auth'); setTab('signin'); };
+    }
+  }catch(err){
+    showError('otp-error', err.message);
+  }finally{
+    btn.disabled = false; btn.textContent = 'Verify';
+  }
+}
+
+function onAuthSuccess(data){
+  localStorage.setItem('jansaarthi_token', data.token);
+  localStorage.setItem('jansaarthi_user', JSON.stringify(data.user));
+  goScreen('success');
+  const link = document.getElementById('success-link');
+  if(role === 'bank'){
+    link.href = 'jansaarthi_bank_dashboard.html';
+    link.textContent = 'Continue to Officer Console';
+    document.getElementById('success-sub').textContent = 'Password and mobile OTP verified — welcome back, Officer.';
+  } else {
+    link.href = 'jansaarthi_app.html';
+    link.textContent = 'Continue to my JanSaarthi app';
+    document.getElementById('success-sub').textContent = 'Password and mobile OTP verified — welcome back.';
+  }
+  link.onclick = null;
+}
+
+async function resendOtp(){
+  const btn = document.getElementById('resend-btn');
+  try{
+    await Api.resendOtp({ phone: otpPhone, purpose: otpPurpose });
+    btn.textContent = 'Code resent ✓';
+    setTimeout(()=>{ btn.textContent='Resend code'; }, 2200);
+  }catch(err){
+    showError('otp-error', err.message);
+  }
+}
+</script>
+
+<!-- Jan's Voice — screen reader / voice navigator -->
+<button id="jv-listen-btn" onclick="jvToggleRead(event)" aria-label="Listen to this screen"
+  style="position:fixed; right:20px; bottom:24px; z-index:500; width:52px; height:52px;
+  border-radius:50%; border:none; cursor:pointer; background:var(--marigold,#E8A33D);
+  color:#fff; font-size:22px; box-shadow:0 4px 14px rgba(0,0,0,.28);
+  display:flex; align-items:center; justify-content:center;">🔊</button>
+<script>
+(function(){
+  if(!('speechSynthesis' in window)){ return; }
+  var synth = window.speechSynthesis;
+  var speaking = false;
+  var langVoiceMap = {en:'en-IN', hi:'hi-IN', mr:'mr-IN', gu:'gu-IN'};
+
+  function currentLangCode(){
+    if(document.body.classList.contains('lang-hi')) return 'hi';
+    if(document.body.classList.contains('lang-mr')) return 'mr';
+    if(document.body.classList.contains('lang-gu')) return 'gu';
+    return 'en';
+  }
+  function activeContainer(){
+    return document.querySelector('.screen.active') ||
+           document.querySelector('.page.active') ||
+           Array.prototype.find.call(document.querySelectorAll('.step'), function(el){ return el.offsetParent !== null; }) ||
+           document.querySelector('.phone') || document.body;
+  }
+  function setBtn(isSpeaking){
+    var b = document.getElementById('jv-listen-btn');
+    if(!b) return;
+    b.innerHTML = isSpeaking ? '⏹' : '🔊';
+    b.style.background = isSpeaking ? '#C0533E' : 'var(--marigold,#E8A33D)';
+  }
+  function stop(){
+    synth.cancel();
+    speaking = false;
+    setBtn(false);
+  }
+  window.jvToggleRead = function(e){
+    if(e) e.stopPropagation();
+    if(speaking){ stop(); return; }
+    var container = activeContainer();
+    var text = (container.innerText || container.textContent || '').trim();
+    if(!text){ return; }
+    var utter = new SpeechSynthesisUtterance(text);
+    utter.lang = langVoiceMap[currentLangCode()] || 'en-IN';
+    utter.rate = 0.92;
+    utter.onend = function(){ speaking = false; setBtn(false); };
+    utter.onerror = function(){ speaking = false; setBtn(false); };
+    synth.cancel();
+    synth.speak(utter);
+    speaking = true;
+    setBtn(true);
+  };
+  document.addEventListener('click', function(e){
+    if(speaking && e.target.id !== 'jv-listen-btn'){ stop(); }
+  }, true);
+})();
+</script>
+
+</body>
+</html>

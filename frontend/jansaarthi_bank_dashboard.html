@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JanSaarthi AI — Bank Officer Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0E2A3A; --navy-800:#123449; --teal-700:#116259; --teal-100:#E4F0EE;
+    --marigold:#E8A33D; --bg:#F3F5F6; --card:#FFFFFF; --ink:#1B2733; --ink-soft:#647380; --line:#E3E8EB;
+    --good:#2F8F5B; --good-bg:#E7F5EC; --warn:#C0533E; --warn-bg:#FBEAE5; --amber:#B9820F; --amber-bg:#FBF1DE;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Inter',sans-serif; background:var(--bg); color:var(--ink);}
+  .app{display:flex; min-height:100vh;}
+  .sidebar{width:220px; flex-shrink:0; background:var(--navy); color:#fff; padding:22px 14px; display:flex; flex-direction:column;}
+  .brand{font-family:'Baloo 2'; font-weight:800; font-size:17px; margin-bottom:4px; padding:0 8px;}
+  .brand small{display:block; font-family:'Inter'; font-weight:500; font-size:11.5px; color:#9FB4C2; margin-top:2px;}
+  .nav-link{display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:10px; color:#B9CBD6; font-weight:600; font-size:13.5px; cursor:pointer; margin-top:14px;}
+  .nav-link .ic{font-size:16px; width:20px; text-align:center;}
+  .nav-link.active{background:rgba(255,255,255,0.12); color:#fff;}
+  .nav-link:hover{background:rgba(255,255,255,0.07);}
+  .sidebar-foot{margin-top:auto; font-size:11px; color:#7391A2; padding:0 8px;}
+
+  .main{flex:1; min-width:0;}
+  .topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 30px; background:#fff; border-bottom:1px solid var(--line);}
+  .topbar h1{font-family:'Baloo 2'; font-size:19px; margin:0; color:var(--navy);}
+  .officer{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-soft);}
+  .avatar{width:32px;height:32px;border-radius:50%; background:var(--teal-100); display:flex;align-items:center;justify-content:center; font-weight:700; color:var(--teal-700); font-size:12.5px;}
+
+  .content{padding:24px 30px 60px;}
+  .page{display:none;}
+  .page.active{display:block; animation:fadein .2s ease;}
+  @keyframes fadein{from{opacity:0;} to{opacity:1;}}
+
+  .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;}
+  .kpi{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .kpi .n{font-family:'Baloo 2'; font-size:26px; font-weight:800; color:var(--navy);}
+  .kpi .l{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .kpi .delta{font-size:11.5px; font-weight:700; margin-top:6px; display:inline-block; padding:2px 8px; border-radius:999px;}
+  .delta.up{background:var(--good-bg); color:var(--good);}
+  .delta.warn{background:var(--warn-bg); color:var(--warn);}
+
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; margin-bottom:18px;}
+  .panel h2{font-family:'Baloo 2'; font-size:15.5px; margin:0 0 14px; color:var(--navy);}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft); padding:8px 10px; border-bottom:1.5px solid var(--line); font-weight:700;}
+  td{padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px;}
+  .badge.high{background:var(--warn-bg); color:var(--warn);}
+  .badge.mod{background:var(--amber-bg); color:var(--amber);}
+  .badge.low{background:var(--good-bg); color:var(--good);}
+  .badge.open{background:#EAF0F8; color:#2A5D9C;}
+  .badge.closed{background:#EEF1F2; color:var(--ink-soft);}
+  .row-btn{background:none; border:1.5px solid var(--line); border-radius:8px; padding:6px 11px; font-size:12px; font-weight:600; cursor:pointer; color:var(--navy); font-family:inherit;}
+  .row-btn:hover{border-color:var(--teal-700);}
+  .row-btn.primary{background:var(--navy); color:#fff; border-color:var(--navy);}
+
+  .bar-row{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .bar-label{width:170px; font-size:12.5px; color:var(--ink-soft); flex-shrink:0;}
+  .bar-track{flex:1; height:14px; background:#EEF1F2; border-radius:8px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:8px; background:var(--teal-700);}
+  .bar-val{width:44px; text-align:right; font-size:12.5px; font-weight:700; color:var(--navy); flex-shrink:0;}
+
+  .grid2{display:grid; grid-template-columns:1.4fr 1fr; gap:18px;}
+  .explain-tag{display:inline-block; font-size:11px; background:var(--teal-100); color:var(--teal-700); padding:2px 8px; border-radius:6px; margin:2px 3px 2px 0; font-weight:600;}
+  .detail-box{display:none; margin-top:6px;}
+  .detail-box.open{display:block;}
+  .modal-note{background:var(--teal-100); border-radius:10px; padding:12px 14px; font-size:12.5px; color:#123449; margin-top:8px;}
+  .toast{display:none; background:var(--good-bg); color:var(--good); border-radius:10px; padding:9px 13px; font-size:12.5px; font-weight:600; margin-top:10px;}
+  .fi-row{display:flex; align-items:center; gap:8px; margin-top:5px;}
+  .fi-label{width:112px; font-size:11.5px; color:var(--ink-soft); flex-shrink:0;}
+  .fi-track{flex:1; height:7px; background:#E9EDEF; border-radius:999px; overflow:hidden;}
+  .fi-fill{height:100%; background:var(--teal-700); border-radius:999px;}
+  .fi-pct{width:34px; text-align:right; font-size:11px; font-weight:700; color:var(--navy);}
+  .mc-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px;}
+  .mc-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .mc-row:last-child{border-bottom:none;}
+  .mc-row span:first-child{color:var(--ink-soft);}
+  .mc-row span:last-child{font-weight:700; color:var(--navy);}
+  .comp-row{display:flex; gap:14px; align-items:flex-start; padding:13px 0; border-bottom:1px solid var(--line);}
+  .comp-row:last-child{border-bottom:none;}
+  .comp-status{flex-shrink:0; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; background:var(--good-bg); color:var(--good); font-weight:800;}
+  .comp-body .t{font-weight:700; font-size:13.5px; color:var(--navy);}
+  .comp-body .d{font-size:12.5px; color:var(--ink-soft); margin-top:2px; line-height:1.45;}
+  .comp-body .ref{font-size:11px; color:var(--teal-700); font-weight:700; margin-top:4px;}
+</style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B4F4A">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">🏦 JanSaarthi AI<small>Bank Officer Console</small></div>
+    <div class="nav-link active" data-nav="overview" onclick="goTo('overview')"><span class="ic">📊</span>Overview</div>
+    <div class="nav-link" data-nav="queue" onclick="goTo('queue')"><span class="ic">🚩</span>Fraud & Stress Queue</div>
+    <div class="nav-link" data-nav="escalations" onclick="goTo('escalations')"><span class="ic">📞</span>Escalations</div>
+    <div class="nav-link" data-nav="audit" onclick="goTo('audit')"><span class="ic">🧾</span>Recommendation Audit</div>
+    <div class="nav-link" data-nav="bias" onclick="goTo('bias')"><span class="ic">⚖️</span>Bias Monitor</div>
+    <div class="nav-link" data-nav="modelcard" onclick="goTo('modelcard')"><span class="ic">🧠</span>Model Card</div>
+    <div class="nav-link" data-nav="compliance" onclick="goTo('compliance')"><span class="ic">📋</span>Compliance</div>
+    <div class="sidebar-foot">HACKOUT'26 · Logic Legends · <a href="index.html" style="color:#9FB4C2;">Log out</a></div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="page-heading">Overview</h1>
+      <div class="officer"><div class="avatar">PS</div>Priya Sharma · Branch Officer, Ujjain</div>
+    </div>
+
+    <div class="content">
+
+      <!-- OVERVIEW -->
+      <div class="page active" id="page-overview">
+        <div class="kpi-grid">
+          <div class="kpi"><div class="n">4,812</div><div class="l">Active customers on JanSaarthi AI</div><span class="delta up">+6.2% MoM</span></div>
+          <div class="kpi"><div class="n">1,204</div><div class="l">Recommendations shown today</div><span class="delta up">71% relevance</span></div>
+          <div class="kpi"><div class="n">38</div><div class="l">Push-selling suppressed (stress cases)</div><span class="delta warn">Responsible AI active</span></div>
+          <div class="kpi"><div class="n">12</div><div class="l">Escalations pending review</div><span class="delta warn">3 high priority</span></div>
+        </div>
+
+        <div class="grid2">
+          <div class="panel">
+            <h2>Today's fraud & stress signals</h2>
+            <table>
+              <tr><th>Customer</th><th>Risk</th><th>Reason</th><th>Status</th></tr>
+              <tr><td>Ramesh Yadav</td><td><span class="badge high">62 · Moderate</span></td><td>Missed EMI x2, low balance</td><td><span class="badge open">Open</span></td></tr>
+              <tr><td>Kavita Devi</td><td><span class="badge high">81 · High</span></td><td>Unusual large withdrawal pattern</td><td><span class="badge open">Open</span></td></tr>
+              <tr><td>Suresh Patil</td><td><span class="badge mod">45 · Low-Mod</span></td><td>New payee, first large transfer</td><td><span class="badge closed">Reviewed</span></td></tr>
+            </table>
+          </div>
+          <div class="panel">
+            <h2>Payment Shield — last 24h</h2>
+            <div style="font-size:13px; color:var(--ink-soft); margin-bottom:10px;">Community-reported payee IDs blocked before transfer</div>
+            <div class="kpi" style="border:none; padding:0;"><div class="n" style="font-size:30px;">27</div><div class="l">High-risk payments intercepted</div></div>
+            <div style="margin-top:14px; font-size:12.5px; color:var(--ink-soft);">Top flag reason: name mismatch (61%), new/unverified account (29%), community report (10%)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUEUE -->
+      <div class="page" id="page-queue">
+        <div class="panel">
+          <h2>Fraud & Stress Review Queue</h2>
+          <table id="queue-table">
+            <tr><th>Customer</th><th>Village/Branch</th><th>Risk score</th><th>Signal</th><th>Action</th></tr>
+            <tr>
+              <td>Ramesh Yadav</td><td>Ujjain Rural</td><td><span class="badge high">62</span></td>
+              <td>2 missed EMI reminders, balance below monthly minimum</td>
+              <td><button class="row-btn primary" onclick="reviewRow(this)">Review</button></td>
+            </tr>
+            <tr>
+              <td>Kavita Devi</td><td>Indore Branch 4</td><td><span class="badge high">81</span></td>
+              <td>Large withdrawal inconsistent with 6-month pattern</td>
+              <td><button class="row-btn primary" onclick="reviewRow(this)">Review</button></td>
+            </tr>
+            <tr>
+              <td>Suresh Patil</td><td>Dewas Branch 2</td><td><span class="badge mod">45</span></td>
+              <td>First-time large transfer to a new payee</td>
+              <td><button class="row-btn" onclick="reviewRow(this)">Reviewed ✓</button></td>
+            </tr>
+            <tr>
+              <td>Meena Kumari</td><td>Ujjain Rural</td><td><span class="badge low">22</span></td>
+              <td>Minor deviation, auto-cleared by model</td>
+              <td><button class="row-btn" disabled style="opacity:.5;">Auto-cleared</button></td>
+            </tr>
+          </table>
+          <div class="toast" id="queue-toast"></div>
+        </div>
+      </div>
+
+      <!-- ESCALATIONS -->
+      <div class="page" id="page-escalations">
+        <div class="panel">
+          <h2>Customer-requested Escalations ("Talk to a person")</h2>
+          <table>
+            <tr><th>Customer</th><th>Requested</th><th>Context</th><th>Priority</th><th>Action</th></tr>
+            <tr>
+              <td>Kavita Devi</td><td>18 min ago</td><td>Flagged high-risk withdrawal — wants clarification</td>
+              <td><span class="badge high">High</span></td>
+              <td><button class="row-btn primary" onclick="assignRow(this)">Assign to me</button></td>
+            </tr>
+            <tr>
+              <td>Ramesh Yadav</td><td>2 hrs ago</td><td>Requested budgeting support after stress alert</td>
+              <td><span class="badge mod">Medium</span></td>
+              <td><button class="row-btn primary" onclick="assignRow(this)">Assign to me</button></td>
+            </tr>
+            <tr>
+              <td>Suresh Patil</td><td>Yesterday</td><td>Confirmed a flagged payment was genuine</td>
+              <td><span class="badge low">Resolved</span></td>
+              <td><button class="row-btn" disabled style="opacity:.5;">Closed</button></td>
+            </tr>
+          </table>
+          <div class="toast" id="esc-toast"></div>
+        </div>
+      </div>
+
+      <!-- AUDIT -->
+      <div class="page" id="page-audit">
+        <div class="panel">
+          <h2>Explainable Recommendation Audit Log</h2>
+          <table>
+            <tr><th>Customer</th><th>Recommendation</th><th>Signal weights (feature importance)</th><th>Outcome</th></tr>
+            <tr>
+              <td>Ramesh Yadav</td><td>Kisan Savings Plan</td>
+              <td>
+                <div class="fi-row"><span class="fi-label">Income pattern</span><div class="fi-track"><div class="fi-fill" style="width:52%;"></div></div><span class="fi-pct">52%</span></div>
+                <div class="fi-row"><span class="fi-label">Spend stability</span><div class="fi-track"><div class="fi-fill" style="width:33%;"></div></div><span class="fi-pct">33%</span></div>
+                <div class="fi-row"><span class="fi-label">Other</span><div class="fi-track"><div class="fi-fill" style="width:15%;"></div></div><span class="fi-pct">15%</span></div>
+              </td>
+              <td><span class="badge low">Accepted</span></td>
+            </tr>
+            <tr>
+              <td>Kavita Devi</td><td>— (suppressed: stress detected)</td>
+              <td>
+                <div class="fi-row"><span class="fi-label">EMI stress</span><div class="fi-track"><div class="fi-fill" style="width:61%; background:var(--warn);"></div></div><span class="fi-pct">61%</span></div>
+                <div class="fi-row"><span class="fi-label">Balance drop</span><div class="fi-track"><div class="fi-fill" style="width:39%; background:var(--warn);"></div></div><span class="fi-pct">39%</span></div>
+              </td>
+              <td><span class="badge mod">No-push applied</span></td>
+            </tr>
+            <tr>
+              <td>Suresh Patil</td><td>Micro-insurance add-on</td>
+              <td><div class="fi-row"><span class="fi-label">Life-stage signal</span><div class="fi-track"><div class="fi-fill" style="width:100%;"></div></div><span class="fi-pct">100%</span></div></td>
+              <td><span class="badge high">Declined</span></td>
+            </tr>
+          </table>
+          <div class="modal-note">Every recommendation (including a suppressed one) is logged with the exact permitted-data signals and their weight — this is the audit trail regulators and internal compliance can review.</div>
+        </div>
+      </div>
+
+      <!-- BIAS -->
+      <div class="page" id="page-bias">
+        <div class="panel">
+          <h2>Bias Monitor — recommendation acceptance by segment</h2>
+          <div class="bar-row"><div class="bar-label">Urban customers</div><div class="bar-track"><div class="bar-fill" style="width:74%;"></div></div><div class="bar-val">74%</div></div>
+          <div class="bar-row"><div class="bar-label">Rural customers</div><div class="bar-track"><div class="bar-fill" style="width:69%; background:var(--marigold);"></div></div><div class="bar-val">69%</div></div>
+          <div class="bar-row"><div class="bar-label">Age 60+</div><div class="bar-track"><div class="bar-fill" style="width:58%; background:var(--warn);"></div></div><div class="bar-val">58%</div></div>
+          <div class="bar-row"><div class="bar-label">First-time digital users</div><div class="bar-track"><div class="bar-fill" style="width:52%; background:var(--warn);"></div></div><div class="bar-val">52%</div></div>
+          <div class="modal-note">⚠️ Acceptance is noticeably lower for the 60+ and first-time-digital segments — flagged for review. This may point to a usability gap (not a need gap), which is why vernacular guidance from Jan's Voice is prioritized for these groups.</div>
+        </div>
+      </div>
+
+      <!-- MODEL CARD -->
+      <div class="page" id="page-modelcard">
+        <div class="panel">
+          <h2>Recommendation Model — Model Card</h2>
+          <div class="mc-grid">
+            <div>
+              <div class="mc-row"><span>Model type</span><span>Rule + scoring hybrid (v0.4)</span></div>
+              <div class="mc-row"><span>Training / calibration data</span><span>Synthetic + consent-safe sample set</span></div>
+              <div class="mc-row"><span>Data categories used</span><span>Txn history, EMI pattern, life-stage</span></div>
+              <div class="mc-row"><span>Last recalibrated</span><span>2 Sep 2026</span></div>
+              <div class="mc-row"><span>Next scheduled audit</span><span>2 Oct 2026</span></div>
+            </div>
+            <div>
+              <div class="mc-row"><span>Explainability coverage</span><span>100% of shown recommendations</span></div>
+              <div class="mc-row"><span>No-push suppression rate</span><span>38 of 1,204 today (3.2%)</span></div>
+              <div class="mc-row"><span>Overall acceptance</span><span>71%</span></div>
+              <div class="mc-row"><span>Segment acceptance gap (max)</span><span style="color:var(--warn);">22 pts (Urban vs 60+)</span></div>
+              <div class="mc-row"><span>Human escalation path</span><span>Always available</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Acceptance rate — last 6 weeks</h2>
+          <div class="bar-row"><div class="bar-label">Week 1</div><div class="bar-track"><div class="bar-fill" style="width:62%;"></div></div><div class="bar-val">62%</div></div>
+          <div class="bar-row"><div class="bar-label">Week 2</div><div class="bar-track"><div class="bar-fill" style="width:65%;"></div></div><div class="bar-val">65%</div></div>
+          <div class="bar-row"><div class="bar-label">Week 3</div><div class="bar-track"><div class="bar-fill" style="width:66%;"></div></div><div class="bar-val">66%</div></div>
+          <div class="bar-row"><div class="bar-label">Week 4</div><div class="bar-track"><div class="bar-fill" style="width:68%;"></div></div><div class="bar-val">68%</div></div>
+          <div class="bar-row"><div class="bar-label">Week 5</div><div class="bar-track"><div class="bar-fill" style="width:70%;"></div></div><div class="bar-val">70%</div></div>
+          <div class="bar-row"><div class="bar-label">Week 6</div><div class="bar-track"><div class="bar-fill" style="width:71%; background:var(--marigold);"></div></div><div class="bar-val">71%</div></div>
+          <div class="modal-note">Tracking the trend, not just a single snapshot, is what lets compliance catch drift in fairness or relevance early.</div>
+        </div>
+      </div>
+
+      <!-- COMPLIANCE -->
+      <div class="page" id="page-compliance">
+        <div class="panel">
+          <h2>Responsible-AI Safeguard → Regulatory Mapping</h2>
+          <div class="comp-row">
+            <div class="comp-status">✓</div>
+            <div class="comp-body"><div class="t">Consent & purpose limitation</div><div class="d">Only customer-permitted data categories are used, for the stated purpose, with a visible Consent Center and revoke option.</div><div class="ref">Maps to: RBI Digital Lending Guidelines — data minimisation & explicit borrower consent</div></div>
+          </div>
+          <div class="comp-row">
+            <div class="comp-status">✓</div>
+            <div class="comp-body"><div class="t">Explainability</div><div class="d">Every recommendation — including a suppressed one — carries a plain-language "why" and a signal-weight breakdown.</div><div class="ref">Maps to: RBI Digital Lending Guidelines — key fact statement & disclosure norms</div></div>
+          </div>
+          <div class="comp-row">
+            <div class="comp-status">✓</div>
+            <div class="comp-body"><div class="t">No-push rule</div><div class="d">Aggressive product offers are automatically suppressed when stress signals are high; support/education is offered instead.</div><div class="ref">Maps to: RBI guidance against unfair/coercive digital lending practices</div></div>
+          </div>
+          <div class="comp-row">
+            <div class="comp-status" style="background:var(--amber-bg); color:var(--amber);">!</div>
+            <div class="comp-body"><div class="t">Bias monitoring</div><div class="d">Segment-level acceptance is tracked; the 60+ and first-time-digital gap is flagged and under active review this cycle.</div><div class="ref">Maps to: RBI IT Governance & Digital Personal Data Protection Act — fair processing</div></div>
+          </div>
+          <div class="comp-row">
+            <div class="comp-status">✓</div>
+            <div class="comp-body"><div class="t">Human escalation</div><div class="d">High-risk or ambiguous cases can always be routed to a human officer; "talk to a person" is never hidden behind a bot loop.</div><div class="ref">Maps to: RBI Digital Lending Guidelines — grievance redressal mechanism</div></div>
+          </div>
+          <div class="modal-note">This mapping is illustrative for the prototype — a production rollout would go through formal legal/compliance sign-off against the current RBI circulars and the DPDP Act.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function goTo(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  document.querySelector('.nav-link[data-nav="'+name+'"]').classList.add('active');
+  const titles={overview:'Overview', queue:'Fraud & Stress Queue', escalations:'Escalations', audit:'Recommendation Audit', bias:'Bias Monitor', modelcard:'Model Card', compliance:'Compliance'};
+  document.getElementById('page-heading').textContent = titles[name];
+  window.scrollTo(0,0);
+}
+function reviewRow(btn){
+  btn.textContent='Reviewed ✓'; btn.classList.remove('primary'); btn.disabled=true; btn.style.opacity=.7;
+  const t=document.getElementById('queue-toast'); t.style.display='block'; t.textContent='Marked as reviewed and logged to audit trail.';
+}
+function assignRow(btn){
+  btn.textContent='Assigned to you'; btn.classList.remove('primary'); btn.disabled=true; btn.style.opacity=.7;
+  const t=document.getElementById('esc-toast'); t.style.display='block'; t.textContent='Case assigned — customer will be notified a representative is reviewing.';
+}
+</script>
+</body>
+</html>

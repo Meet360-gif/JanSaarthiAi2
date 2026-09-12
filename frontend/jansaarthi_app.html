@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JanSaarthi AI — Mobile App Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-900:#0B4F4A; --teal-700:#116259; --teal-100:#E4F0EE;
+    --marigold:#E8A33D; --marigold-dark:#C9861F;
+    --paper:#FAF7F0; --card:#FFFFFF; --ink:#1F2A28; --ink-soft:#5B6864; --line:#E4DFD3;
+    --good:#4C8C4A; --good-bg:#E9F4E7;
+    --warn:#C0533E; --warn-bg:#FBEAE5;
+    --amber:#C9861F; --amber-bg:#FBF1DE;
+    --radius-lg:22px; --radius-md:14px; --shadow:0 10px 30px rgba(20,40,35,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0; font-family:'Noto Sans','Noto Sans Devanagari',sans-serif; background:transparent; color:var(--ink);
+    display:flex; align-items:flex-start; justify-content:center; padding:24px 12px; min-height:100%;}
+  .stage{width:100%; max-width:430px;}
+  .phone{background:var(--paper); border-radius:36px; border:10px solid #17221F; box-shadow:var(--shadow);
+    overflow:hidden; position:relative; min-height:800px; display:flex; flex-direction:column;}
+  .notch{height:22px; background:#17221F; display:flex; align-items:center; justify-content:center;}
+  .notch::after{content:''; width:80px;height:8px;background:#0d1512;border-radius:6px;}
+  .topbar{background:var(--teal-900); color:#fff; padding:16px 18px 20px; border-radius:0 0 24px 24px;}
+  .topbar-row{display:flex; align-items:center; justify-content:space-between;}
+  .greet{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:22px; line-height:1.25;}
+  .greet small{display:block; font-family:'Noto Sans'; font-weight:400; font-size:14px; color:#CDE4E0; margin-top:2px;}
+  .lang-toggle{display:flex; background:rgba(255,255,255,0.14); border-radius:999px; padding:3px; gap:2px;}
+  .lang-toggle button{border:none; background:transparent; color:#fff; font-weight:600; font-size:13px; padding:7px 12px; border-radius:999px; cursor:pointer; font-family:inherit;}
+  .lang-toggle button.active{background:var(--marigold); color:#3a2604;}
+  .voice-fab{margin-top:14px; background:rgba(255,255,255,0.12); border:1.5px dashed rgba(255,255,255,0.5); border-radius:16px; padding:12px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;}
+  .voice-fab .mic-dot{width:38px;height:38px;border-radius:50%; background:var(--marigold); display:flex;align-items:center;justify-content:center; flex-shrink:0;}
+  .voice-fab .txt{font-size:14px; color:#EAF3F1; line-height:1.3;}
+  .voice-fab .txt b{display:block; color:#fff; font-size:15px; font-family:'Baloo 2'; font-weight:600;}
+  .screens{flex:1; overflow-y:auto; padding:16px 16px 90px;}
+  .screen{display:none;}
+  .screen.active{display:block; animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+  .backlink{display:inline-flex; align-items:center; gap:6px; color:var(--teal-900); font-weight:700; font-size:13.5px; cursor:pointer; margin-bottom:10px;}
+  .section-title{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:17px; color:var(--teal-900); margin:22px 0 10px;}
+  .section-title:first-child{margin-top:4px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; margin-bottom:12px;}
+  .alert-banner{background:var(--warn-bg); border:1px solid #E9C6BC; border-radius:var(--radius-md); padding:12px 14px; display:flex; gap:10px; align-items:flex-start; margin-bottom:14px; cursor:pointer;}
+  .alert-banner .dot{width:10px;height:10px;border-radius:50%;background:var(--warn); margin-top:6px; flex-shrink:0;}
+  .alert-banner .t{font-size:14px; color:#7a2e1f; line-height:1.4;}
+  .alert-banner .t b{display:block; color:var(--warn); font-size:14.5px;}
+  .quick-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:6px;}
+  .quick-card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius-md); padding:14px 12px; text-align:center; cursor:pointer;}
+  .quick-card .ic{font-size:28px; margin-bottom:6px;}
+  .quick-card .lbl{font-size:13.5px; font-weight:600; color:var(--ink);}
+  .rec-preview{display:flex; align-items:center; gap:12px; cursor:pointer;}
+  .rec-preview .ic{width:46px;height:46px;border-radius:12px; background:var(--teal-100); display:flex;align-items:center;justify-content:center; font-size:22px; flex-shrink:0;}
+  .rec-preview .body{flex:1;}
+  .rec-preview .body .h{font-weight:700; font-size:15px;}
+  .rec-preview .body .p{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+  .chev{color:var(--ink-soft); font-size:20px;}
+  .pill{display:inline-block; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; background:var(--good-bg); color:var(--good); margin-bottom:6px;}
+  .pill.warn{background:var(--warn-bg); color:var(--warn);}
+  .pill.amber{background:var(--amber-bg); color:var(--amber);}
+  .timeline{position:relative; padding-left:26px;}
+  .timeline::before{content:''; position:absolute; left:9px; top:6px; bottom:6px; width:2px; background:var(--line);}
+  .tl-item{position:relative; margin-bottom:18px;}
+  .tl-item::before{content:''; position:absolute; left:-26px; top:2px; width:20px;height:20px;border-radius:50%; background:var(--teal-100); border:2px solid var(--teal-700);}
+  .tl-item .tl-date{font-size:12px; color:var(--ink-soft); font-weight:600;}
+  .tl-item .tl-txt{font-size:14.5px; margin-top:2px; line-height:1.4;}
+  .need-result{background:linear-gradient(135deg, var(--teal-900), var(--teal-700)); color:#fff; border-radius:var(--radius-lg); padding:18px; margin-top:6px;}
+  .need-result .lbl{font-size:12.5px; color:#BFE0DA; font-weight:700;}
+  .need-result .h{font-family:'Baloo 2'; font-size:19px; font-weight:700; margin:6px 0 8px; line-height:1.3;}
+  .need-result .p{font-size:13.5px; color:#DCEFEC; line-height:1.5;}
+  .prod-card{border-radius:var(--radius-lg); background:var(--card); border:1px solid var(--line); padding:18px;}
+  .prod-head{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
+  .prod-head .ic{width:52px;height:52px;border-radius:14px;background:var(--marigold); display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .prod-head .h{font-family:'Baloo 2'; font-weight:700; font-size:18px;}
+  .prod-head .sub{font-size:13px; color:var(--ink-soft);}
+  .why-box{background:var(--teal-100); border-radius:var(--radius-md); padding:13px 14px; margin:12px 0;}
+  .why-box .t{font-weight:700; font-size:13.5px; color:var(--teal-900); margin-bottom:6px;}
+  .why-box ul{margin:0; padding-left:18px;}
+  .why-box li{font-size:13.5px; color:#2b4c47; margin-bottom:4px; line-height:1.4;}
+  .btn-row{display:flex; gap:10px; margin-top:14px;}
+  .btn{flex:1; padding:13px 10px; border-radius:12px; border:none; font-weight:700; font-size:14.5px; cursor:pointer; font-family:inherit;}
+  .btn-primary{background:var(--teal-900); color:#fff;}
+  .btn-danger{background:var(--warn); color:#fff;}
+  .btn-ghost{background:transparent; color:var(--teal-900); border:1.5px solid var(--line);}
+  .toast{display:none; background:var(--good-bg); color:var(--good); border-radius:var(--radius-md); padding:10px 14px; font-size:13.5px; font-weight:600; margin-top:10px; text-align:center;}
+  .chat-wrap{display:flex; flex-direction:column; gap:10px; margin-bottom:12px;}
+  .msg{max-width:80%; padding:11px 14px; border-radius:16px; font-size:14.5px; line-height:1.45;}
+  .msg.bot{background:var(--card); border:1px solid var(--line); border-bottom-left-radius:4px; align-self:flex-start;}
+  .msg.user{background:var(--teal-900); color:#fff; border-bottom-right-radius:4px; align-self:flex-end;}
+  .quick-replies{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
+  .qr-btn{background:var(--card); border:1.5px solid var(--teal-700); color:var(--teal-900); font-size:13px; font-weight:600; padding:9px 13px; border-radius:999px; cursor:pointer; font-family:inherit;}
+  .mic-row{position:absolute; left:16px; right:16px; bottom:78px; display:flex; align-items:center; gap:10px;}
+  .mic-big{width:52px;height:52px;border-radius:50%; background:var(--marigold); border:none; display:flex;align-items:center;justify-content:center; font-size:24px; cursor:pointer; flex-shrink:0; box-shadow:0 6px 16px rgba(232,163,61,0.5);}
+  .mic-hint{font-size:12.5px; color:var(--ink-soft);}
+  .risk-card{background:var(--warn-bg); border:1px solid #E9C6BC; border-radius:var(--radius-lg); padding:18px;}
+  .risk-top{display:flex; align-items:center; gap:12px;}
+  .risk-score{width:58px;height:58px;border-radius:50%; background:#fff; border:4px solid var(--warn); display:flex;align-items:center;justify-content:center; font-family:'Baloo 2'; font-weight:700; font-size:15px; color:var(--warn); flex-shrink:0;}
+  .risk-top .h{font-family:'Baloo 2'; font-weight:700; font-size:16.5px; color:#7a2e1f;}
+  .risk-top .sub{font-size:12.5px; color:#8a4433;}
+  .risk-reasons{margin:14px 0; padding-left:18px;}
+  .risk-reasons li{font-size:13.5px; color:#6b2c1e; margin-bottom:6px; line-height:1.4;}
+  .safe-note{background:var(--good-bg); color:#2b5c29; border-radius:var(--radius-md); padding:11px 13px; font-size:13px; line-height:1.45; margin-top:12px;}
+  .consent-row{display:flex; align-items:center; justify-content:space-between; padding:14px 4px; border-bottom:1px solid var(--line);}
+  .consent-row:last-child{border-bottom:none;}
+  .consent-row .l .t{font-weight:600; font-size:14.5px;}
+  .consent-row .l .d{font-size:12.5px; color:var(--ink-soft); margin-top:2px; max-width:230px;}
+  .switch{position:relative; width:46px; height:26px; flex-shrink:0; margin-left:10px;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider{position:absolute; cursor:pointer; inset:0; background:#D8D2C2; border-radius:999px; transition:.2s;}
+  .slider::before{content:''; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s;}
+  input:checked + .slider{background:var(--teal-700);}
+  input:checked + .slider::before{transform:translateX(20px);}
+  .bottomnav{position:absolute; left:0; right:0; bottom:0; background:#fff; border-top:1px solid var(--line); display:flex; padding:8px 6px 12px;}
+  .nav-item{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; cursor:pointer; font-family:inherit; color:var(--ink-soft); padding:6px 2px; border-radius:12px;}
+  .nav-item .ic{font-size:20px;}
+  .nav-item .lbl{font-size:10.5px; font-weight:700;}
+  .nav-item.active{color:var(--teal-900); background:var(--teal-100);}
+  .hint{text-align:center; font-size:12px; color:var(--ink-soft); margin-top:10px;}
+
+  /* Hub cards */
+  .hub-card{display:flex; align-items:center; gap:13px; cursor:pointer;}
+  .hub-card .ic{width:48px;height:48px;border-radius:13px; display:flex;align-items:center;justify-content:center; font-size:23px; flex-shrink:0;}
+  .hub-card .body{flex:1;}
+  .hub-card .body .h{font-weight:700; font-size:14.5px;}
+  .hub-card .body .p{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .hub-card .badge{font-size:10.5px; font-weight:800; padding:3px 8px; border-radius:999px;}
+
+  /* Payment shield */
+  .toggle-row{display:flex; gap:8px; margin-bottom:14px;}
+  .toggle-row button{flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; color:var(--ink-soft);}
+  .toggle-row button.active{border-color:var(--teal-900); color:var(--teal-900); background:var(--teal-100);}
+  .payee-line{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .payee-avatar{width:44px;height:44px;border-radius:50%; background:var(--teal-100); display:flex;align-items:center;justify-content:center; font-weight:700; color:var(--teal-900); flex-shrink:0;}
+  .payee-line .h{font-weight:700; font-size:15px;}
+  .payee-line .p{font-size:12.5px; color:var(--ink-soft);}
+  .trust-meter{height:10px; border-radius:999px; background:#EFEAE0; overflow:hidden; margin:6px 0 4px;}
+  .trust-fill{height:100%; border-radius:999px;}
+  .check-row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px dashed var(--line); font-size:13.5px;}
+  .check-row:last-child{border-bottom:none;}
+  .check-status{font-weight:700; font-size:12.5px;}
+  .cooling{background:var(--amber-bg); border-radius:var(--radius-md); padding:12px 13px; font-size:13px; color:#6b4c14; line-height:1.5; margin-top:12px;}
+
+  /* Scam call guard */
+  .msg-box{background:var(--paper); border:1.5px dashed var(--line); border-radius:var(--radius-md); padding:13px; font-size:13.5px; line-height:1.5; font-style:italic; color:#4a4a44; margin-bottom:12px;}
+  .analyzing{font-size:13px; color:var(--ink-soft); display:none; margin:8px 0;}
+
+  /* Quiz */
+  .quiz-q{font-weight:700; font-size:15px; margin-bottom:12px; line-height:1.4;}
+  .quiz-opt{display:block; width:100%; text-align:left; background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:9px; font-size:14px; cursor:pointer; font-family:inherit; color:var(--ink);}
+  .quiz-opt.correct{border-color:var(--good); background:var(--good-bg); color:#2b5c29; font-weight:700;}
+  .quiz-opt.wrong{border-color:var(--warn); background:var(--warn-bg); color:#7a2e1f; font-weight:700;}
+  .quiz-fb{font-size:13px; color:var(--ink-soft); margin:10px 0; line-height:1.5;}
+  .score-badge{text-align:center; padding:20px 0;}
+  .score-badge .n{font-family:'Baloo 2'; font-size:40px; color:var(--teal-900); font-weight:800;}
+
+  [data-hi],[data-mr],[data-gu]{display:none;}
+  body.lang-hi [data-en]{display:none;} body.lang-hi [data-hi]{display:inline;}
+  body.lang-mr [data-en]{display:none;} body.lang-mr [data-mr]{display:inline;}
+  body.lang-gu [data-en]{display:none;} body.lang-gu [data-gu]{display:inline;}
+  .lang-toggle{flex-wrap:wrap; max-width:210px;}
+  .lang-toggle button{padding:7px 10px;}
+  .goal-card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px;}
+  .goal-bar-track{height:14px; background:#EEE8DA; border-radius:999px; overflow:hidden; margin:10px 0 6px;}
+  .goal-bar-fill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--marigold),var(--teal-700));}
+  .chip-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .chip-btn{background:var(--teal-100); color:var(--teal-900); border:none; font-weight:700; font-size:12.5px; padding:8px 12px; border-radius:999px; cursor:pointer; font-family:inherit;}
+  .sms-screen{background:#111; color:#8FE38A; font-family:'Courier New',monospace; border-radius:var(--radius-md); padding:14px; font-size:13px; line-height:1.7; white-space:pre-wrap;}
+  .assist-log{display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px dashed var(--line);}
+  .assist-log:last-child{border-bottom:none;}
+  .assist-log .dot2{width:8px;height:8px;border-radius:50%;background:var(--teal-700); margin-top:6px; flex-shrink:0;}
+  .fi-row{display:flex; align-items:center; gap:8px; margin-top:4px;}
+  .fi-track{flex:1; height:6px; background:#D9E5E2; border-radius:999px; overflow:hidden;}
+  .fi-fill{height:100%; background:var(--teal-700); border-radius:999px;}
+  .fi-pct{font-size:11px; font-weight:700; color:var(--teal-900); width:32px; text-align:right;}
+</style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B4F4A">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="topbar">
+      <div class="topbar-row">
+        <div class="greet">
+          <span data-en>Namaste, Ramesh ji</span><span data-hi>नमस्ते, रमेश जी</span><span data-mr>नमस्कार, रमेश जी</span><span data-gu>નમસ્તે, રમેશ જી</span>
+          <small><span data-en>Your banking, made simple</span><span data-hi>आपकी बैंकिंग, आसान भाषा में</span><span data-mr>तुमचं बँकिंग, सोपं केलं</span><span data-gu>તમારું બેન્કિંગ, સરળ બનાવ્યું</span></small>
+        </div>
+        <div class="lang-toggle">
+          <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
+          <button id="btn-hi" onclick="setLang('hi')">हिं</button>
+          <button id="btn-mr" onclick="setLang('mr')">मरा</button>
+          <button id="btn-gu" onclick="setLang('gu')">ગુજ</button>
+        </div>
+      </div>
+      <div class="voice-fab" onclick="goTo('voice')">
+        <div class="mic-dot">🎙️</div>
+        <div class="txt">
+          <b><span data-en>Talk to Jan's Voice</span><span data-hi>Jan's Voice से बात करें</span><span data-mr>Jan's Voiceशी बोला</span><span data-gu>Jan's Voice સાથે વાત કરો</span></b>
+          <span data-en>Ask anything, in your own language</span><span data-hi>अपनी भाषा में कुछ भी पूछें</span><span data-mr>तुमच्या भाषेत काहीही विचारा</span><span data-gu>તમારી ભાષામાં કંઈપણ પૂછો</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="screens">
+
+      <!-- HOME -->
+      <div class="screen active" id="screen-home">
+        <div class="alert-banner" onclick="goTo('stressdetail')">
+          <div class="dot"></div>
+          <div class="t">
+            <b><span data-en>We noticed something unusual</span><span data-hi>हमने कुछ असामान्य देखा है</span><span data-mr>आम्हाला काहीतरी असामान्य आढळलं</span><span data-gu>અમે કંઈક અસામાન્ય નોંધ્યું</span></b>
+            <span data-en>Tap to see details — no action needed right now.</span><span data-hi>विवरण देखने के लिए टैप करें — अभी कोई कार्रवाई ज़रूरी नहीं।</span><span data-mr>तपशील पाहण्यासाठी टॅप करा — आत्ता काही करण्याची गरज नाही.</span><span data-gu>વિગતો જોવા ટૅપ કરો — હમણાં કોઈ પગલાં જરૂરી નથી.</span>
+          </div>
+        </div>
+        <div class="section-title"><span data-en>Quick help</span><span data-hi>त्वरित सहायता</span><span data-mr>जलद मदत</span><span data-gu>ઝડપી મદદ</span></div>
+        <div class="quick-grid">
+          <div class="quick-card" onclick="goTo('needsense')"><div class="ic">🔍</div><div class="lbl"><span data-en>Understand my needs</span><span data-hi>मेरी ज़रूरत समझें</span><span data-mr>माझी गरज समजून घ्या</span><span data-gu>મારી જરૂરિયાત સમજો</span></div></div>
+          <div class="quick-card" onclick="goTo('recommend')"><div class="ic">🎯</div><div class="lbl"><span data-en>What's right for me</span><span data-hi>मेरे लिए सही क्या है</span><span data-mr>माझ्यासाठी काय योग्य आहे</span><span data-gu>મારા માટે શું યોગ્ય છે</span></div></div>
+          <div class="quick-card" onclick="prepShield('safe')"><div class="ic">💸</div><div class="lbl"><span data-en>Check before I pay</span><span data-hi>भुगतान से पहले जांचें</span><span data-mr>पैसे पाठवण्यापूर्वी तपासा</span><span data-gu>ચુકવણી પહેલાં તપાસો</span></div></div>
+          <div class="quick-card" onclick="goTo('suraksha')"><div class="ic">🛡️</div><div class="lbl"><span data-en>Suraksha Kendra</span><span data-hi>सुरक्षा केंद्र</span><span data-mr>सुरक्षा केंद्र</span><span data-gu>સુરક્ષા કેન્દ્ર</span></div></div>
+          <div class="quick-card" onclick="goTo('goals')"><div class="ic">🎯</div><div class="lbl"><span data-en>Savings Goals</span><span data-hi>बचत लक्ष्य</span><span data-mr>बचत ध्येय</span><span data-gu>બચત લક્ષ્ય</span></div></div>
+          <div class="quick-card" onclick="goTo('mitra')"><div class="ic">🧑‍🤝‍🧑</div><div class="lbl"><span data-en>Ask a Bank Mitra</span><span data-hi>बैंक मित्र से पूछें</span><span data-mr>बँक मित्राला विचारा</span><span data-gu>બેંક મિત્રને પૂછો</span></div></div>
+        </div>
+        <div class="section-title"><span data-en>Recommended for you</span><span data-hi>आपके लिए सुझाव</span></div>
+        <div class="card rec-preview" onclick="goTo('recommend')">
+          <div class="ic">🌾</div>
+          <div class="body"><div class="h"><span data-en>Kisan Savings Plan</span><span data-hi>किसान बचत योजना</span></div>
+          <div class="p"><span data-en>Matches your harvest-season income pattern</span><span data-hi>आपकी फसल-मौसम आय के अनुसार उपयुक्त</span></div></div>
+          <div class="chev">›</div>
+        </div>
+        <div class="hint"><span data-en>Prototype demo — sample data only</span><span data-hi>डेमो प्रोटोटाइप — केवल नमूना डेटा</span></div>
+      </div>
+
+      <!-- NEED SENSE -->
+      <div class="screen" id="screen-needsense">
+        <div class="section-title"><span data-en>Need Sense — your recent activity</span><span data-hi>नीड सेंस — आपकी हाल की गतिविधि</span></div>
+        <div class="card">
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-date"><span data-en>3 weeks ago</span><span data-hi>3 सप्ताह पहले</span></div><div class="tl-txt"><span data-en>Regular deposits after crop sale — income has increased</span><span data-hi>फसल बिक्री के बाद नियमित जमा — आय बढ़ी है</span></div></div>
+            <div class="tl-item"><div class="tl-date"><span data-en>2 weeks ago</span><span data-hi>2 सप्ताह पहले</span></div><div class="tl-txt"><span data-en>Two small withdrawals for farm equipment</span><span data-hi>कृषि उपकरण के लिए दो छोटी निकासी</span></div></div>
+            <div class="tl-item"><div class="tl-date"><span data-en>This week</span><span data-hi>इस सप्ताह</span></div><div class="tl-txt"><span data-en>Balance staying higher than usual, no EMI stress seen</span><span data-hi>बैलेंस सामान्य से अधिक, कोई EMI तनाव नहीं</span></div></div>
+          </div>
+        </div>
+        <div class="need-result">
+          <div class="lbl"><span data-en>LIKELY NEED DETECTED</span><span data-hi>संभावित ज़रूरत पहचानी गई</span></div>
+          <div class="h"><span data-en>A safe place to grow seasonal savings</span><span data-hi>मौसमी बचत को सुरक्षित रूप से बढ़ाने की जगह</span></div>
+          <div class="p"><span data-en>Your income just increased and spending stayed steady. This is a good time to consider a savings option built for seasonal earners — not a loan.</span><span data-hi>आपकी आय अभी बढ़ी है और खर्च स्थिर रहा है। यह मौसमी कमाई करने वालों के लिए बनाई गई बचत योजना पर विचार करने का सही समय है — कोई लोन नहीं।</span></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="goTo('recommend')"><span data-en>See recommendation</span><span data-hi>सुझाव देखें</span></button></div>
+      </div>
+
+      <!-- RECOMMENDATION -->
+      <div class="screen" id="screen-recommend">
+        <div class="section-title"><span data-en>Recommendation</span><span data-hi>सुझाव</span></div>
+        <div class="prod-card">
+          <span class="pill"><span data-en>MATCHES YOUR NEED</span><span data-hi>आपकी ज़रूरत से मेल खाता है</span></span>
+          <div class="prod-head"><div class="ic">🌾</div>
+            <div><div class="h"><span data-en>Kisan Savings Plan</span><span data-hi>किसान बचत योजना</span></div>
+            <div class="sub"><span data-en>Flexible deposits, no penalty in lean months</span><span data-hi>लचीली जमा, कम आय के महीनों में कोई जुर्माना नहीं</span></div></div>
+          </div>
+          <div class="why-box">
+            <div class="t">💡 <span data-en>Why am I seeing this?</span><span data-hi>मुझे यह क्यों दिख रहा है?</span></div>
+            <ul>
+              <li><span data-en>Your recent income pattern shows a seasonal harvest cycle</span><span data-hi>आपकी हाल की आय में मौसमी फसल चक्र दिखता है</span></li>
+              <li><span data-en>Spending has been steady — no signs of financial stress</span><span data-hi>खर्च स्थिर रहा है — किसी वित्तीय तनाव का संकेत नहीं</span></li>
+              <li><span data-en>No existing loan product fits this pattern better</span><span data-hi>इस पैटर्न के लिए फिलहाल कोई बेहतर लोन उत्पाद नहीं</span></li>
+            </ul>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="dismiss()"><span data-en>Not now</span><span data-hi>अभी नहीं</span></button>
+            <button class="btn btn-primary" onclick="accept()"><span data-en>Tell me more</span><span data-hi>और जानें</span></button>
+          </div>
+          <div class="toast" id="rec-toast"></div>
+        </div>
+      </div>
+
+      <!-- JANS VOICE -->
+      <div class="screen" id="screen-voice" style="position:relative; min-height:520px;">
+        <div class="section-title"><span data-en>Jan's Voice — voice assistant</span><span data-hi>Jan's Voice — आवाज़ सहायक</span></div>
+        <div class="chat-wrap" id="chat-wrap">
+          <div class="msg bot"><span data-en>Namaste! I'm Jan's Voice. You can talk to me in Hindi, English, or your own language. What do you need help with today?</span><span data-hi>नमस्ते! मैं Jan's Voice हूं। आप मुझसे हिंदी, अंग्रेज़ी या अपनी भाषा में बात कर सकते हैं। आज आपको किस चीज़ में मदद चाहिए?</span></div>
+          <div class="quick-replies" id="qr-1">
+            <button class="qr-btn" onclick="chatFlow('kyc')"><span data-en>Complete my KYC</span><span data-hi>मेरा KYC पूरा करें</span></button>
+            <button class="qr-btn" onclick="chatFlow('loan')"><span data-en>Ask about a loan</span><span data-hi>लोन के बारे में पूछें</span></button>
+            <button class="qr-btn" onclick="chatFlow('balance')"><span data-en>Check my balance</span><span data-hi>बैलेंस देखें</span></button>
+          </div>
+        </div>
+        <div class="mic-row">
+          <button class="mic-big" onclick="chatFlow('kyc')">🎙️</button>
+          <div class="mic-hint"><span data-en>Tap the mic and speak — or choose a option above</span><span data-hi>माइक दबाएं और बोलें — या ऊपर से चुनें</span></div>
+        </div>
+      </div>
+
+      <!-- SURAKSHA HUB -->
+      <div class="screen" id="screen-suraksha">
+        <div class="section-title"><span data-en>Suraksha Kendra — your security center</span><span data-hi>सुरक्षा केंद्र</span></div>
+        <div class="card hub-card" onclick="goTo('stressdetail')">
+          <div class="ic" style="background:var(--warn-bg);">📊</div>
+          <div class="body"><div class="h"><span data-en>Stress & Fraud Monitor</span><span data-hi>तनाव और धोखाधड़ी मॉनिटर</span></div><div class="p"><span data-en>Early-warning on unusual account activity</span><span data-hi>असामान्य गतिविधि की शीघ्र चेतावनी</span></div></div>
+          <span class="badge" style="background:var(--warn-bg); color:var(--warn);">1 <span data-en>alert</span><span data-hi>अलर्ट</span></span>
+        </div>
+        <div class="card hub-card" onclick="prepShield('safe')">
+          <div class="ic" style="background:var(--teal-100);">💸</div>
+          <div class="body"><div class="h"><span data-en>Payment Shield</span><span data-hi>पेमेंट शील्ड</span></div><div class="p"><span data-en>Check a payee before you send money</span><span data-hi>भुगतान से पहले प्राप्तकर्ता की जांच करें</span></div></div>
+        </div>
+        <div class="card hub-card" onclick="goTo('callguard')">
+          <div class="ic" style="background:var(--amber-bg);">📞</div>
+          <div class="body"><div class="h"><span data-en>Scam Call & Message Guard</span><span data-hi>स्कैम कॉल और मैसेज गार्ड</span></div><div class="p"><span data-en>Check a suspicious call or message</span><span data-hi>संदिग्ध कॉल या मैसेज की जांच करें</span></div></div>
+        </div>
+        <div class="card hub-card" onclick="goTo('guardian')">
+          <div class="ic" style="background:var(--teal-100);">👨‍👩‍👧</div>
+          <div class="body"><div class="h"><span data-en>Family Guardian</span><span data-hi>फैमिली गार्जियन</span></div><div class="p"><span data-en>Let a trusted family member get alerts</span><span data-hi>किसी भरोसेमंद परिजन को अलर्ट भेजें</span></div></div>
+        </div>
+        <div class="card hub-card" onclick="startQuiz()">
+          <div class="ic" style="background:var(--good-bg);">🎓</div>
+          <div class="body"><div class="h"><span data-en>Suraksha Pathshala</span><span data-hi>सुरक्षा पाठशाला</span></div><div class="p"><span data-en>60-second quiz: spot the scam</span><span data-hi>60 सेकंड में स्कैम पहचानो</span></div></div>
+        </div>
+        <div class="card hub-card" onclick="goTo('mitra')">
+          <div class="ic" style="background:var(--amber-bg);">🧑‍🤝‍🧑</div>
+          <div class="body"><div class="h"><span data-en>Bank Mitra assisted visit</span><span data-hi>बैंक मित्र सहायता भेंट</span></div><div class="p"><span data-en>Get in-person help, fully logged and consented</span><span data-hi>व्यक्तिगत सहायता, पूरी तरह सहमति के साथ दर्ज</span></div></div>
+        </div>
+        <div class="card hub-card" onclick="goTo('offline')">
+          <div class="ic" style="background:#EAF0F8;">📴</div>
+          <div class="body"><div class="h"><span data-en>No smartphone? Use *99#</span><span data-hi>स्मार्टफोन नहीं? *99# का उपयोग करें</span></div><div class="p"><span data-en>Basic banking works over SMS/USSD too</span><span data-hi>बुनियादी बैंकिंग SMS/USSD से भी होती है</span></div></div>
+        </div>
+      </div>
+
+      <!-- STRESS DETAIL -->
+      <div class="screen" id="screen-stressdetail">
+        <div class="backlink" onclick="goTo('suraksha')">← <span data-en>Suraksha Kendra</span><span data-hi>सुरक्षा केंद्र</span></div>
+        <div class="section-title"><span data-en>Stress & Fraud Early-Warning</span><span data-hi>तनाव और धोखाधड़ी चेतावनी</span></div>
+        <div class="risk-card">
+          <div class="risk-top">
+            <div class="risk-score">62<span style="font-size:10px;">/100</span></div>
+            <div><div class="h"><span data-en>Moderate stress signal</span><span data-hi>मध्यम तनाव संकेत</span></div><div class="sub"><span data-en>Detected from recent account activity</span><span data-hi>हाल की खाता गतिविधि से पहचाना गया</span></div></div>
+          </div>
+          <ul class="risk-reasons">
+            <li><span data-en>Two missed EMI reminders in the last 30 days</span><span data-hi>पिछले 30 दिनों में दो EMI रिमाइंडर छूटे</span></li>
+            <li><span data-en>Balance dropped below usual monthly minimum</span><span data-hi>बैलेंस सामान्य मासिक न्यूनतम से नीचे गिरा</span></li>
+            <li><span data-en>No new high-value loan offers will be shown for now</span><span data-hi>अभी कोई नया बड़ा लोन ऑफर नहीं दिखाया जाएगा</span></li>
+          </ul>
+          <div class="safe-note">🛡️ <span data-en>In line with our no-push rule, aggressive product offers are paused. Would you like free budgeting support or to speak with a bank representative?</span><span data-hi>हमारे "नो-पुश" नियम के अनुसार, आक्रामक ऑफर रोक दिए गए हैं। क्या आप मुफ़्त बजट सहायता चाहेंगे या बैंक प्रतिनिधि से बात करना चाहेंगे?</span></div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="dismissStress()"><span data-en>Budgeting tips</span><span data-hi>बजट सुझाव</span></button>
+            <button class="btn btn-primary" onclick="escalate()"><span data-en>Talk to a person</span><span data-hi>व्यक्ति से बात करें</span></button>
+          </div>
+          <div class="toast" id="stress-toast"></div>
+        </div>
+      </div>
+
+      <!-- PAYMENT SHIELD -->
+      <div class="screen" id="screen-shield">
+        <div class="backlink" onclick="goTo('suraksha')">← <span data-en>Suraksha Kendra</span><span data-hi>सुरक्षा केंद्र</span></div>
+        <div class="section-title"><span data-en>Payment Shield</span><span data-hi>पेमेंट शील्ड</span></div>
+        <div class="toggle-row">
+          <button id="tab-safe" class="active" onclick="prepShield('safe')"><span data-en>Example: safe payment</span><span data-hi>उदाहरण: सुरक्षित भुगतान</span></button>
+          <button id="tab-risky" onclick="prepShield('risky')"><span data-en>Example: risky payment</span><span data-hi>उदाहरण: जोखिम भरा भुगतान</span></button>
+        </div>
+        <div class="card" id="shield-card">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <!-- SCAM CALL GUARD -->
+      <div class="screen" id="screen-callguard">
+        <div class="backlink" onclick="goTo('suraksha')">← <span data-en>Suraksha Kendra</span><span data-hi>सुरक्षा केंद्र</span></div>
+        <div class="section-title"><span data-en>Scam Call & Message Guard</span><span data-hi>स्कैम कॉल और मैसेज गार्ड</span></div>
+        <div class="card">
+          <div style="font-size:13px; color:var(--ink-soft); margin-bottom:8px;"><span data-en>A message you received:</span><span data-hi>आपको मिला संदेश:</span></div>
+          <div class="msg-box">
+            <span data-en>"URGENT: Your SBI account will be BLOCKED today. Share your OTP now to verify KYC. Call 98xxxxxxx immediately."</span>
+            <span data-hi>"तुरंत सूचना: आपका SBI खाता आज ब्लॉक हो जाएगा। KYC सत्यापन के लिए अभी अपना OTP बताएं। तुरंत 98xxxxxxx पर कॉल करें।"</span>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="checkMessage()"><span data-en>Check this message</span><span data-hi>इस मैसेज की जांच करें</span></button>
+          <div class="analyzing" id="cg-analyzing"><span data-en>Analyzing message pattern…</span><span data-hi>मैसेज पैटर्न की जांच हो रही है…</span></div>
+          <div id="cg-result"></div>
+        </div>
+      </div>
+
+      <!-- FAMILY GUARDIAN -->
+      <div class="screen" id="screen-guardian">
+        <div class="backlink" onclick="goTo('suraksha')">← <span data-en>Suraksha Kendra</span><span data-hi>सुरक्षा केंद्र</span></div>
+        <div class="section-title"><span data-en>Family Guardian</span><span data-hi>फैमिली गार्जियन</span></div>
+        <div class="card">
+          <div class="consent-row" style="padding-top:0;">
+            <div class="l"><div class="t"><span data-en>Enable Family Guardian</span><span data-hi>फैमिली गार्जियन चालू करें</span></div>
+            <div class="d"><span data-en>Sunita ji (Daughter) will get alerts on unusual activity</span><span data-hi>सुनीता जी (बेटी) को असामान्य गतिविधि पर अलर्ट मिलेगा</span></div></div>
+            <label class="switch"><input type="checkbox" checked onchange="toggleGuardian(this)"><span class="slider"></span></label>
+          </div>
+          <div class="why-box" style="margin-top:14px;">
+            <div class="t">🔒 <span data-en>What Sunita ji can see</span><span data-hi>सुनीता जी क्या देख सकती हैं</span></div>
+            <ul>
+              <li><span data-en>Only alerts about large or unusual transactions</span><span data-hi>केवल बड़े या असामान्य लेन-देन के अलर्ट</span></li>
+              <li><span data-en>Never your balance, PIN, or full transaction history</span><span data-hi>कभी भी बैलेंस, पिन या पूरा लेन-देन इतिहास नहीं</span></li>
+              <li><span data-en>You can turn this off anytime from Consent Center</span><span data-hi>आप इसे सहमति केंद्र से कभी भी बंद कर सकते हैं</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="section-title"><span data-en>Recent alerts sent</span><span data-hi>हाल के भेजे गए अलर्ट</span></div>
+        <div class="card" id="guardian-log">
+          <div class="tl-item" style="margin-bottom:4px;"><div class="tl-date"><span data-en>2 minutes ago</span><span data-hi>2 मिनट पहले</span></div><div class="tl-txt"><span data-en>₹25,000 transfer to a new payee was flagged and shared with Sunita ji</span><span data-hi>नए प्राप्तकर्ता को ₹25,000 का ट्रांसफर फ्लैग किया गया और सुनीता जी को भेजा गया</span></div></div>
+        </div>
+      </div>
+
+      <!-- PATHSHALA QUIZ -->
+      <div class="screen" id="screen-pathshala">
+        <div class="backlink" onclick="goTo('suraksha')">← <span data-en>Suraksha Kendra</span><span data-hi>सुरक्षा केंद्र</span></div>
+        <div class="section-title"><span data-en>Suraksha Pathshala</span><span data-hi>सुरक्षा पाठशाला</span></div>
+        <div class="card" id="quiz-card"></div>
+      </div>
+
+      <!-- SAVINGS GOALS -->
+      <div class="screen" id="screen-goals">
+        <div class="backlink" onclick="goTo('home')">← <span data-en>Home</span><span data-hi>होम</span><span data-mr>मुख्यपान</span><span data-gu>હોમ</span></div>
+        <div class="section-title"><span data-en>Savings Goals</span><span data-hi>बचत लक्ष्य</span><span data-mr>बचत ध्येय</span><span data-gu>બચત લક્ષ્ય</span></div>
+        <div class="goal-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="h" style="font-family:'Baloo 2'; font-weight:700; font-size:16px;">🎓 <span data-en>Daughter's school fee</span><span data-hi>बेटी की स्कूल फीस</span><span data-mr>मुलीची शाळेची फी</span><span data-gu>દીકરીની શાળા ફી</span></div>
+          </div>
+          <div class="goal-bar-track"><div class="goal-bar-fill" id="goal-bar" style="width:82%;"></div></div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--ink-soft);">
+            <span id="goal-saved">₹4,100 <span data-en>saved</span><span data-hi>बचाए गए</span><span data-mr>बचत झाली</span><span data-gu>બચત થઈ</span></span>
+            <span><span data-en>Target</span><span data-hi>लक्ष्य</span><span data-mr>ध्येय</span><span data-gu>લક્ષ્ય</span> ₹5,000</span>
+          </div>
+          <div class="modal-note" id="goal-nudge" style="margin-top:12px;"><span data-en>₹900 away from your goal — right on time for the new term.</span><span data-hi>लक्ष्य से ₹900 दूर — नए सत्र के लिए सही समय पर।</span><span data-mr>ध्येयापासून ₹900 दूर — नवीन सत्रासाठी योग्य वेळी.</span><span data-gu>લક્ષ્યથી ₹900 દૂર — નવા સત્ર માટે યોગ્ય સમયે.</span></div>
+          <div class="chip-row">
+            <button class="chip-btn" onclick="addGoal(100)">+ ₹100</button>
+            <button class="chip-btn" onclick="addGoal(500)">+ ₹500</button>
+            <button class="chip-btn" onclick="addGoal(900)">+ ₹900 (<span data-en>complete</span><span data-hi>पूरा करें</span><span data-mr>पूर्ण करा</span><span data-gu>પૂર્ણ કરો</span>)</button>
+          </div>
+          <div class="toast" id="goal-toast"></div>
+        </div>
+        <div class="section-title"><span data-en>Other goals</span><span data-hi>अन्य लक्ष्य</span><span data-mr>इतर ध्येये</span><span data-gu>અન્ય લક્ષ્યો</span></div>
+        <div class="card rec-preview">
+          <div class="ic">🚜</div>
+          <div class="body"><div class="h"><span data-en>Next season's seeds & fertilizer</span><span data-hi>अगले मौसम के बीज व खाद</span><span data-mr>पुढील हंगामाचे बियाणे व खत</span><span data-gu>આગામી સિઝનનાં બિયારણ અને ખાતર</span></div>
+          <div class="p"><span data-en>₹1,200 of ₹6,000 saved</span><span data-hi>₹6,000 में से ₹1,200 बचाए</span><span data-mr>₹6,000 पैकी ₹1,200 बचत</span><span data-gu>₹6,000 માંથી ₹1,200 બચત</span></div></div>
+          <div class="chev">›</div>
+        </div>
+        <div class="hint"><span data-en>Goals are a savings tool only — no product is pushed here.</span><span data-hi>लक्ष्य केवल बचत के लिए हैं — यहां कोई उत्पाद नहीं थोपा जाता।</span></div>
+      </div>
+
+      <!-- BANK MITRA ASSISTED MODE -->
+      <div class="screen" id="screen-mitra">
+        <div class="backlink" onclick="goTo('suraksha')">← <span data-en>Suraksha Kendra</span><span data-hi>सुरक्षा केंद्र</span></div>
+        <div class="section-title"><span data-en>Bank Mitra assisted visit</span><span data-hi>बैंक मित्र सहायता भेंट</span></div>
+        <div class="card">
+          <div style="font-size:13.5px; color:var(--ink-soft); line-height:1.5;"><span data-en>No smartphone, no problem. A trained local Bank Mitra can complete this on your behalf, in person, in your language — every step is logged to your account just like if you'd done it yourself.</span><span data-hi>स्मार्टफोन नहीं है तो कोई बात नहीं। एक प्रशिक्षित बैंक मित्र आपकी भाषा में, व्यक्तिगत रूप से यह पूरा कर सकता है — हर कदम आपके खाते में उसी तरह दर्ज होता है जैसे आपने खुद किया हो।</span></div>
+          <div class="why-box" style="margin-top:14px;">
+            <div class="t">🔒 <span data-en>What gets logged</span><span data-hi>क्या दर्ज होता है</span></div>
+            <ul>
+              <li><span data-en>Mitra's ID, your consent, and timestamp for every action taken</span><span data-hi>हर कार्रवाई के लिए मित्र की ID, आपकी सहमति और समय दर्ज होता है</span></li>
+              <li><span data-en>You get an SMS confirmation the moment anything changes</span><span data-hi>कुछ भी बदलने पर आपको तुरंत SMS पुष्टि मिलती है</span></li>
+              <li><span data-en>A Mitra can never see your PIN or password</span><span data-hi>मित्र कभी भी आपका पिन या पासवर्ड नहीं देख सकता</span></li>
+            </ul>
+          </div>
+          <div class="btn-row"><button class="btn btn-primary" style="width:100%;" onclick="requestMitra()"><span data-en>Request a Bank Mitra visit</span><span data-hi>बैंक मित्र भेंट का अनुरोध करें</span></button></div>
+          <div class="toast" id="mitra-toast"></div>
+        </div>
+        <div class="section-title"><span data-en>Recent assisted sessions</span><span data-hi>हाल की सहायता प्राप्त सत्र</span></div>
+        <div class="card">
+          <div class="assist-log"><div class="dot2"></div><div><b style="font-size:13.5px;"><span data-en>KYC renewal</span><span data-hi>KYC नवीनीकरण</span></b><div style="font-size:12.5px; color:var(--ink-soft);"><span data-en>Completed with Mitra Anita (ID: BM-2291) · 12 Sep</span><span data-hi>मित्र अनिता (ID: BM-2291) के साथ पूर्ण · 12 सितंबर</span></div></div></div>
+        </div>
+      </div>
+
+      <!-- OFFLINE / USSD MODE -->
+      <div class="screen" id="screen-offline">
+        <div class="backlink" onclick="goTo('suraksha')">← <span data-en>Suraksha Kendra</span><span data-hi>सुरक्षा केंद्र</span></div>
+        <div class="section-title"><span data-en>No smartphone or data? Use *99#</span><span data-hi>स्मार्टफोन या डेटा नहीं? *99# इस्तेमाल करें</span></div>
+        <div class="card">
+          <div style="font-size:13.5px; color:var(--ink-soft); margin-bottom:10px;"><span data-en>Everything Jan's Voice does can also run on a basic feature phone, over USSD or SMS — no internet needed.</span><span data-hi>Jan's Voice जो कुछ करता है वह बिना इंटरनेट के, USSD या SMS पर भी किसी भी बेसिक फोन पर चल सकता है।</span></div>
+          <div class="sms-screen">*99#
+1. Balance
+2. Mini statement
+3. Report fraud
+4. Talk to Bank Mitra
+5. Suraksha alerts
+&gt; _</div>
+          <div class="btn-row"><button class="btn btn-ghost" style="width:100%;" onclick="ussdDemo()"><span data-en>Simulate: check balance</span><span data-hi>नमूना: बैलेंस जांचें</span></button></div>
+          <div class="sms-screen" id="ussd-result" style="display:none; margin-top:10px;"></div>
+        </div>
+        <div class="hint"><span data-en>Same fraud/stress protection, same explanations — just over SMS.</span><span data-hi>वही धोखाधड़ी/तनाव सुरक्षा, वही स्पष्टीकरण — बस SMS पर।</span></div>
+      </div>
+
+      <!-- CONSENT -->
+      <div class="screen" id="screen-consent">
+        <div class="section-title"><span data-en>Consent Center</span><span data-hi>सहमति केंद्र</span></div>
+        <div class="card" style="padding:6px 14px;">
+          <div class="consent-row"><div class="l"><div class="t"><span data-en>Transaction history</span><span data-hi>लेन-देन इतिहास</span></div><div class="d"><span data-en>Used to understand your spending and saving</span><span data-hi>आपके खर्च और बचत को समझने के लिए</span></div></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+          <div class="consent-row"><div class="l"><div class="t"><span data-en>Loan / EMI pattern</span><span data-hi>लोन / EMI पैटर्न</span></div><div class="d"><span data-en>Used to detect financial stress early</span><span data-hi>वित्तीय तनाव जल्दी पहचानने के लिए</span></div></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+          <div class="consent-row"><div class="l"><div class="t"><span data-en>Life-stage signals</span><span data-hi>जीवन-चरण संकेत</span></div><div class="d"><span data-en>e.g. farming season, family milestones</span><span data-hi>जैसे फसल का मौसम, पारिवारिक अवसर</span></div></div><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+          <div class="consent-row"><div class="l"><div class="t"><span data-en>Family Guardian sharing</span><span data-hi>फैमिली गार्जियन साझाकरण</span></div><div class="d"><span data-en>Send alerts to your nominated family member</span><span data-hi>आपके नामित परिजन को अलर्ट भेजें</span></div></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+        </div>
+        <div class="hint"><span data-en>You can turn any of these off anytime. Turning off may reduce how personal our help can be.</span><span data-hi>आप इन्हें कभी भी बंद कर सकते हैं। बंद करने से हमारी सहायता कम व्यक्तिगत हो सकती है।</span></div>
+      </div>
+
+    </div>
+
+    <div class="bottomnav">
+      <button class="nav-item active" data-nav="home" onclick="goTo('home')"><div class="ic">🏠</div><div class="lbl"><span data-en>Home</span><span data-hi>होम</span><span data-mr>मुख्यपान</span><span data-gu>હોમ</span></div></button>
+      <button class="nav-item" data-nav="needsense" onclick="goTo('needsense')"><div class="ic">🔍</div><div class="lbl"><span data-en>Need</span><span data-hi>ज़रूरत</span><span data-mr>गरज</span><span data-gu>જરૂર</span></div></button>
+      <button class="nav-item" data-nav="voice" onclick="goTo('voice')"><div class="ic">💬</div><div class="lbl"><span data-en>Jan's Voice</span><span data-hi>Jan's Voice</span><span data-mr>Jan's Voice</span><span data-gu>Jan's Voice</span></div></button>
+      <button class="nav-item" data-nav="suraksha" onclick="goTo('suraksha')"><div class="ic">🛡️</div><div class="lbl"><span data-en>Suraksha</span><span data-hi>सुरक्षा</span><span data-mr>सुरक्षा</span><span data-gu>સુરક્ષા</span></div></button>
+      <button class="nav-item" data-nav="consent" onclick="goTo('consent')"><div class="ic">🔒</div><div class="lbl"><span data-en>Consent</span><span data-hi>सहमति</span><span data-mr>संमती</span><span data-gu>સંમતિ</span></div></button>
+    </div>
+
+<!-- Jan's Voice — screen reader / voice navigator -->
+<button id="jv-listen-btn" onclick="jvToggleRead(event)" aria-label="Listen to this screen"
+  style="position:absolute; right:14px; bottom:92px; z-index:500; width:52px; height:52px;
+  border-radius:50%; border:none; cursor:pointer; background:var(--marigold,#E8A33D);
+  color:#fff; font-size:22px; box-shadow:0 4px 14px rgba(0,0,0,.28);
+  display:flex; align-items:center; justify-content:center;">🔊</button>
+<script>
+(function(){
+  if(!('speechSynthesis' in window)){ return; }
+  var synth = window.speechSynthesis;
+  var speaking = false;
+  var langVoiceMap = {en:'en-IN', hi:'hi-IN', mr:'mr-IN', gu:'gu-IN'};
+
+  function currentLangCode(){
+    if(document.body.classList.contains('lang-hi')) return 'hi';
+    if(document.body.classList.contains('lang-mr')) return 'mr';
+    if(document.body.classList.contains('lang-gu')) return 'gu';
+    return 'en';
+  }
+  function activeContainer(){
+    return document.querySelector('.screen.active') ||
+           document.querySelector('.page.active') ||
+           Array.prototype.find.call(document.querySelectorAll('.step'), function(el){ return el.offsetParent !== null; }) ||
+           document.querySelector('.phone') || document.body;
+  }
+  function setBtn(isSpeaking){
+    var b = document.getElementById('jv-listen-btn');
+    if(!b) return;
+    b.innerHTML = isSpeaking ? '⏹' : '🔊';
+    b.style.background = isSpeaking ? '#C0533E' : 'var(--marigold,#E8A33D)';
+  }
+  function stop(){
+    synth.cancel();
+    speaking = false;
+    setBtn(false);
+  }
+  window.jvToggleRead = function(e){
+    if(e) e.stopPropagation();
+    if(speaking){ stop(); return; }
+    var container = activeContainer();
+    var text = (container.innerText || container.textContent || '').trim();
+    if(!text){ return; }
+    var utter = new SpeechSynthesisUtterance(text);
+    utter.lang = langVoiceMap[currentLangCode()] || 'en-IN';
+    utter.rate = 0.92;
+    utter.onend = function(){ speaking = false; setBtn(false); };
+    utter.onerror = function(){ speaking = false; setBtn(false); };
+    synth.cancel();
+    synth.speak(utter);
+    speaking = true;
+    setBtn(true);
+  };
+  // Stop reading if the user taps anywhere else (e.g. navigates to another screen)
+  document.addEventListener('click', function(e){
+    if(speaking && e.target.id !== 'jv-listen-btn'){ stop(); }
+  }, true);
+})();
+</script>
+
+  </div>
+  <div class="hint" style="margin-top:14px;">JanSaarthi AI · Team Logic Legends · HACKOUT'26 mobile app demo · <a href="index.html" style="color:var(--teal-700); font-weight:700; text-decoration:none;">Log out</a></div>
+</div>
+
+<script>
+function setLang(l){
+  document.body.classList.remove('lang-hi','lang-mr','lang-gu');
+  if(l!=='en') document.body.classList.add('lang-'+l);
+  ['en','hi','mr','gu'].forEach(code=>document.getElementById('btn-'+code).classList.toggle('active', l===code));
+}
+const navMap = {home:'home', needsense:'needsense', voice:'voice', suraksha:'suraksha', stressdetail:'suraksha', shield:'suraksha', callguard:'suraksha', guardian:'suraksha', pathshala:'suraksha', mitra:'suraksha', offline:'suraksha', consent:'consent', recommend:null, goals:null};
+function goTo(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navKey = navMap[name];
+  if(navKey){ const b=document.querySelector('.nav-item[data-nav="'+navKey+'"]'); if(b) b.classList.add('active'); }
+  document.querySelector('.screens').scrollTop = 0;
+}
+
+function dismiss(){ const t=document.getElementById('rec-toast'); t.style.display='block';
+  t.innerHTML = document.body.classList.contains('lang-hi') ? 'ठीक है, अभी के लिए कोई बदलाव नहीं।' : "Okay, no changes for now."; }
+function accept(){ const t=document.getElementById('rec-toast'); t.style.display='block';
+  t.innerHTML = document.body.classList.contains('lang-hi') ? 'बढ़िया! एक बैंक अधिकारी आपसे जल्द संपर्क करेगा।' : "Great! A bank officer will reach out to you shortly."; }
+function dismissStress(){ const t=document.getElementById('stress-toast'); t.style.display='block';
+  t.innerHTML = document.body.classList.contains('lang-hi') ? 'बजट सुझाव Jan's Voice चैट में भेजे जा रहे हैं।' : "Sending budgeting tips to your Jan's Voice chat."; }
+function escalate(){ const t=document.getElementById('stress-toast'); t.style.display='block';
+  t.innerHTML = document.body.classList.contains('lang-hi') ? 'अनुरोध भेजा गया — कोई प्रतिनिधि 24 घंटे में कॉल करेगा।' : "Request sent — a representative will call within 24 hours."; }
+
+let goalSaved = 4100, goalTarget = 5000;
+function addGoal(amount){
+  const hi = document.body.classList.contains('lang-hi');
+  goalSaved = Math.min(goalTarget, goalSaved + amount);
+  const pct = Math.round((goalSaved/goalTarget)*100);
+  document.getElementById('goal-bar').style.width = pct+'%';
+  document.getElementById('goal-saved').innerHTML = '₹'+goalSaved.toLocaleString('en-IN')+' '+(hi?'बचाए गए':'saved');
+  const t = document.getElementById('goal-toast'); t.style.display='block';
+  if(goalSaved >= goalTarget){
+    document.getElementById('goal-nudge').innerHTML = hi ? '🎉 लक्ष्य पूरा हुआ! यह बचत उत्पाद नहीं है, इसलिए कोई शुल्क या ब्याज नहीं।' : "🎉 Goal reached! This is a savings tool, not a product — no fees or interest.";
+    t.innerHTML = hi ? 'बधाई हो! लक्ष्य पूरा हुआ।' : "Congratulations! Goal completed.";
+  } else {
+    t.innerHTML = hi ? '₹'+amount+' जोड़ा गया।' : "₹"+amount+" added.";
+  }
+}
+function requestMitra(){
+  const t=document.getElementById('mitra-toast'); t.style.display='block'; const hi=document.body.classList.contains('lang-hi');
+  t.innerHTML = hi ? 'अनुरोध भेजा गया — बैंक मित्र अनिता 2 दिन में आपसे संपर्क करेंगी।' : "Request sent — Bank Mitra Anita will contact you within 2 days.";
+}
+function ussdDemo(){
+  const hi = document.body.classList.contains('lang-hi');
+  const r = document.getElementById('ussd-result'); r.style.display='block';
+  r.textContent = hi ? "1\n\nआपका बैलेंस: ₹18,420\nधन्यवाद. मुख्य मेनू के लिए *99# फिर डायल करें।" : "1\n\nYour balance: ₹18,420\nThank you. Dial *99# again for the main menu.";
+}
+
+let chatStep = 0;
+function chatFlow(topic){
+  const wrap = document.getElementById('chat-wrap');
+  const hi = document.body.classList.contains('lang-hi');
+  const oldQr = document.getElementById('qr-'+chatStep) || document.getElementById('qr-1');
+  if(oldQr) oldQr.remove();
+  const userMsgs = {kyc:{en:"Complete my KYC", hi:"मेरा KYC पूरा करें"}, loan:{en:"Ask about a loan", hi:"लोन के बारे में पूछें"}, balance:{en:"Check my balance", hi:"बैलेंस देखें"}};
+  const botReplies = {
+    kyc:{en:"Sure! I'll need one photo of your Aadhaar card and a quick selfie. Do you want to do this now?", hi:"ज़रूर! मुझे आपके आधार कार्ड की एक फोटो और एक सेल्फी चाहिए। क्या आप अभी करना चाहेंगे?"},
+    loan:{en:"Based on your recent savings pattern, a loan may not be the best fit right now — I'd recommend the Kisan Savings Plan instead. Want to see why?", hi:"आपकी हाल की बचत के अनुसार, अभी लोन सही विकल्प नहीं लगता — मैं किसान बचत योजना सुझाता हूं। क्या आप जानना चाहेंगे क्यों?"},
+    balance:{en:"Your available balance is ₹18,420. Would you like a simple summary of this month's activity?", hi:"आपका उपलब्ध बैलेंस ₹18,420 है। क्या आप इस महीने की गतिविधि का सरल सारांश चाहेंगे?"}
+  };
+  const uDiv=document.createElement('div'); uDiv.className='msg user'; uDiv.textContent = hi?userMsgs[topic].hi:userMsgs[topic].en; wrap.appendChild(uDiv);
+  const bDiv=document.createElement('div'); bDiv.className='msg bot'; bDiv.textContent = hi?botReplies[topic].hi:botReplies[topic].en; wrap.appendChild(bDiv);
+  chatStep++;
+  const qrDiv=document.createElement('div'); qrDiv.className='quick-replies'; qrDiv.id='qr-'+chatStep;
+  const whyBtn = topic==='loan' ? `<button class="qr-btn" onclick="chatWhy()">${hi?'क्यों? (कारण दिखाएं)':'Why? (show reasons)'}</button>` : '';
+  qrDiv.innerHTML = `<button class="qr-btn" onclick="chatYes()">${hi?'हां, आगे बढ़ें':'Yes, continue'}</button>${whyBtn}<button class="qr-btn" onclick="goTo('home')">${hi?'बाद में':'Maybe later'}</button>`;
+  wrap.appendChild(qrDiv);
+  document.querySelector('.screens').scrollTop = document.querySelector('.screens').scrollHeight;
+}
+function chatWhy(){
+  const wrap=document.getElementById('chat-wrap'); const hi=document.body.classList.contains('lang-hi');
+  const last=document.querySelector('.quick-replies:last-of-type'); if(last) last.remove();
+  const uDiv=document.createElement('div'); uDiv.className='msg user'; uDiv.textContent = hi?'क्यों? (कारण दिखाएं)':'Why? (show reasons)'; wrap.appendChild(uDiv);
+  const bDiv=document.createElement('div'); bDiv.className='msg bot';
+  bDiv.innerHTML = `<div style="margin-bottom:6px;">${hi?'यह सुझाव इन संकेतों के भार पर आधारित है, किसी उत्पाद-बिक्री लक्ष्य पर नहीं:':'This suggestion is weighted on these signals, not a product-sales target:'}</div>
+    <div class="fi-row"><span style="width:110px; font-size:12px;">${hi?'आय स्थिरता':'Income stability'}</span><div class="fi-track"><div class="fi-fill" style="width:44%;"></div></div><span class="fi-pct">44%</span></div>
+    <div class="fi-row"><span style="width:110px; font-size:12px;">${hi?'EMI/तनाव संकेत':'EMI/stress signal'}</span><div class="fi-track"><div class="fi-fill" style="width:31%;"></div></div><span class="fi-pct">31%</span></div>
+    <div class="fi-row"><span style="width:110px; font-size:12px;">${hi?'मौसमी पैटर्न':'Seasonal pattern'}</span><div class="fi-track"><div class="fi-fill" style="width:17%;"></div></div><span class="fi-pct">17%</span></div>
+    <div class="fi-row"><span style="width:110px; font-size:12px;">${hi?'अन्य':'Other'}</span><div class="fi-track"><div class="fi-fill" style="width:8%;"></div></div><span class="fi-pct">8%</span></div>`;
+  wrap.appendChild(bDiv);
+  document.querySelector('.screens').scrollTop = document.querySelector('.screens').scrollHeight;
+}
+function chatYes(){
+  const wrap=document.getElementById('chat-wrap'); const hi=document.body.classList.contains('lang-hi');
+  const last=document.querySelector('.quick-replies:last-of-type'); if(last) last.remove();
+  const bDiv=document.createElement('div'); bDiv.className='msg bot';
+  bDiv.textContent = hi ? "बहुत बढ़िया! मैं आपको अगले चरण पर ले जा रहा हूं — कृपया थोड़ा इंतज़ार करें।" : "Wonderful! Taking you to the next step — please hold on a moment.";
+  wrap.appendChild(bDiv);
+  document.querySelector('.screens').scrollTop = document.querySelector('.screens').scrollHeight;
+}
+
+function toggleGuardian(el){
+  const hi=document.body.classList.contains('lang-hi');
+  const log=document.getElementById('guardian-log');
+  if(!el.checked){
+    log.innerHTML = `<div style="font-size:13px;color:var(--ink-soft);text-align:center;padding:10px 0;">${hi?'फैमिली गार्जियन बंद है — कोई अलर्ट नहीं भेजा जाएगा।':'Family Guardian is off — no alerts will be sent.'}</div>`;
+  } else {
+    log.innerHTML = `<div class="tl-item" style="margin-bottom:4px;"><div class="tl-date">${hi?'2 मिनट पहले':'2 minutes ago'}</div><div class="tl-txt">${hi?'नए प्राप्तकर्ता को ₹25,000 का ट्रांसफर फ्लैग किया गया और सुनीता जी को भेजा गया':'₹25,000 transfer to a new payee was flagged and shared with Sunita ji'}</div></div>`;
+  }
+}
+
+function prepShield(kind){
+  goTo('shield');
+  document.getElementById('tab-safe').classList.toggle('active', kind==='safe');
+  document.getElementById('tab-risky').classList.toggle('active', kind==='risky');
+  const hi = document.body.classList.contains('lang-hi');
+  const card = document.getElementById('shield-card');
+  if(kind==='safe'){
+    card.innerHTML = `
+      <div class="payee-line"><div class="payee-avatar">SK</div><div><div class="h">Sunil Kirana Store</div><div class="p">${hi?'भेजा जा रहा राशि: ₹1,200 · UPI: sunilkirana@okaxis':'Sending: ₹1,200 · UPI: sunilkirana@okaxis'}</div></div></div>
+      <span class="pill">${hi?'सुरक्षित भुगतान':'SAFE TO PAY'}</span>
+      <div class="trust-meter"><div class="trust-fill" style="width:92%; background:var(--good);"></div></div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">${hi?'ट्रस्ट स्कोर: 92/100':'Trust score: 92/100'}</div>
+      <div class="check-row"><span>${hi?'नाम मिलान':'Name match'}</span><span class="check-status" style="color:var(--good);">✓ ${hi?'मेल खाता है':'Matches'}</span></div>
+      <div class="check-row"><span>${hi?'खाता आयु':'Account age'}</span><span class="check-status" style="color:var(--good);">${hi?'2 साल से सक्रिय':'Active 2 years'}</span></div>
+      <div class="check-row"><span>${hi?'सामुदायिक रिपोर्ट':'Community reports'}</span><span class="check-status" style="color:var(--good);">${hi?'कोई नहीं':'None'}</span></div>
+      <div class="btn-row"><button class="btn btn-primary" style="width:100%;" onclick="paySuccess()">${hi?'भुगतान करें':'Proceed to pay'}</button></div>
+      <div class="toast" id="shield-toast"></div>
+    `;
+  } else {
+    card.innerHTML = `
+      <div class="payee-line"><div class="payee-avatar" style="background:var(--warn-bg); color:var(--warn);">RS</div><div><div class="h">rahul.finance@oksbi</div><div class="p">${hi?'भेजी जा रही राशि: ₹25,000':'Sending: ₹25,000'}</div></div></div>
+      <span class="pill warn">${hi?'उच्च जोखिम':'HIGH RISK'}</span>
+      <div class="trust-meter"><div class="trust-fill" style="width:18%; background:var(--warn);"></div></div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">${hi?'ट्रस्ट स्कोर: 18/100':'Trust score: 18/100'}</div>
+      <div class="check-row"><span>${hi?'नाम मिलान':'Name match'}</span><span class="check-status" style="color:var(--warn);">⚠ ${hi?'"R K Enterprises" से मेल नहीं खाता':'Mismatches "R K Enterprises"'}</span></div>
+      <div class="check-row"><span>${hi?'खाता आयु':'Account age'}</span><span class="check-status" style="color:var(--warn);">⚠ ${hi?'4 दिन पहले बना':'Created 4 days ago'}</span></div>
+      <div class="check-row"><span>${hi?'सामुदायिक रिपोर्ट':'Community reports'}</span><span class="check-status" style="color:var(--warn);">🔴 ${hi?'3 रिपोर्ट (7 दिन)':'3 reports (7 days)'}</span></div>
+      <div class="cooling">⏳ ${hi?'यह भुगतान जोखिम भरा लगता है। भेजने से पहले 30 मिनट रुकें और प्राप्तकर्ता से फोन पर पुष्टि करें।':'This looks risky. We recommend waiting 30 minutes and verifying with the receiver directly by phone before sending.'}</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" style="width:100%;" onclick="cancelPay()">${hi?'भुगतान रद्द करें':'Cancel payment'}</button>
+      </div>
+      <div class="btn-row"><button class="btn btn-ghost" style="width:100%;" onclick="stillSend()">${hi?'फिर भी भेजना है':'I still want to send'}</button></div>
+      <div class="toast" id="shield-toast"></div>
+    `;
+  }
+}
+function paySuccess(){ const t=document.getElementById('shield-toast'); t.style.display='block'; const hi=document.body.classList.contains('lang-hi');
+  t.innerHTML = hi?'✅ भुगतान सफलतापूर्वक भेजा गया।':'✅ Payment sent successfully.'; }
+function cancelPay(){ const t=document.getElementById('shield-toast'); t.style.display='block'; const hi=document.body.classList.contains('lang-hi');
+  t.innerHTML = hi?'भुगतान रद्द कर दिया गया। समझदारी भरा फैसला!':'Payment cancelled. Smart move!'; }
+function stillSend(){ const t=document.getElementById('shield-toast'); t.style.display='block'; const hi=document.body.classList.contains('lang-hi');
+  t.innerHTML = hi?'⚠ कृपया पहले प्राप्तकर्ता को कॉल कर पुष्टि करें। एक अनुस्मारक 10 मिनट में भेजा जाएगा।':'⚠ Please confirm with the receiver by phone first. A reminder will follow in 10 minutes.'; }
+
+function checkMessage(){
+  const hi = document.body.classList.contains('lang-hi');
+  document.getElementById('cg-analyzing').style.display='block';
+  document.getElementById('cg-result').innerHTML='';
+  setTimeout(()=>{
+    document.getElementById('cg-analyzing').style.display='none';
+    document.getElementById('cg-result').innerHTML = `
+      <div class="risk-card" style="margin-top:6px;">
+        <div class="risk-top"><div class="risk-score" style="border-color:var(--warn);">🚩</div>
+          <div><div class="h">${hi?'ज्ञात स्कैम पैटर्न से मेल':'Matches known scam pattern'}</div><div class="sub">${hi?'नकली तात्कालिकता + OTP मांग':'Fake urgency + OTP request'}</div></div>
+        </div>
+        <ul class="risk-reasons">
+          <li>${hi?'बैंक कभी भी फोन पर OTP नहीं मांगते':'Banks never ask for your OTP over a call or message'}</li>
+          <li>${hi?'"आज ही ब्लॉक हो जाएगा" जैसे डर वाले शब्द एक चेतावनी संकेत हैं':'Urgent threats like "blocked today" are a red flag'}</li>
+          <li>${hi?'नंबर आधिकारिक बैंक हेल्पलाइन सूची में नहीं है':'Number does not match official bank helpline records'}</li>
+        </ul>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="reportMsg()">${hi?'नंबर रिपोर्ट करें':'Report this number'}</button>
+          <button class="btn btn-primary" onclick="blockMsg()">${hi?'सेंडर ब्लॉक करें':'Block sender'}</button>
+        </div>
+        <div class="toast" id="cg-toast"></div>
+      </div>`;
+  }, 700);
+}
+function reportMsg(){ const t=document.getElementById('cg-toast'); t.style.display='block'; const hi=document.body.classList.contains('lang-hi');
+  t.innerHTML = hi?'रिपोर्ट दर्ज़ हुई — धन्यवाद, इससे दूसरों की भी सुरक्षा होगी।':'Reported — thank you, this helps protect others too.'; }
+function blockMsg(){ const t=document.getElementById('cg-toast'); t.style.display='block'; const hi=document.body.classList.contains('lang-hi');
+  t.innerHTML = hi?'सेंडर ब्लॉक कर दिया गया।':'Sender blocked.'; }
+
+const quizData = [
+  { q:{en:"A caller says he is from your bank and asks for your OTP to 'reverse a wrong transaction'. What should you do?", hi:"एक कॉलर कहता है वह बैंक से है और 'गलत लेनदेन वापस करने' के लिए आपका OTP मांगता है। आपको क्या करना चाहिए?"},
+    opts:[{en:"Share the OTP quickly so it gets fixed", hi:"जल्दी से OTP बता दें ताकि ठीक हो जाए", correct:false},
+          {en:"Hang up — banks never ask for OTP over a call", hi:"कॉल काट दें — बैंक कभी फोन पर OTP नहीं मांगते", correct:true},
+          {en:"Ask the caller to call back later", hi:"कॉलर से बाद में कॉल करने को कहें", correct:false}],
+    fb:{en:"Correct! No bank employee will ever ask for your OTP, PIN, or password over a call.", hi:"सही जवाब! कोई भी बैंक कर्मचारी कभी फोन पर आपका OTP, पिन या पासवर्ड नहीं मांगेगा।"} },
+  { q:{en:"You get a message: 'You've won ₹50,000! Click this link to claim.' What's the safest action?", hi:"आपको मैसेज मिलता है: '₹50,000 जीते! दावा करने के लिए इस लिंक पर क्लिक करें।' सबसे सुरक्षित कदम क्या है?"},
+    opts:[{en:"Click the link to see the prize", hi:"इनाम देखने के लिए लिंक पर क्लिक करें", correct:false},
+          {en:"Forward it to family first, then click", hi:"पहले परिवार को भेजें, फिर क्लिक करें", correct:false},
+          {en:"Don't click — delete or report it", hi:"क्लिक न करें — डिलीट या रिपोर्ट करें", correct:true}],
+    fb:{en:"Correct! Unexpected prize messages with links are almost always scams designed to steal your details.", hi:"सही जवाब! अनपेक्षित इनाम वाले लिंक लगभग हमेशा आपकी जानकारी चुराने के लिए बनाए गए स्कैम होते हैं।"} }
+];
+let quizIdx=0, quizScore=0;
+function startQuiz(){ quizIdx=0; quizScore=0; goTo('pathshala'); renderQuiz(); }
+function renderQuiz(){
+  const hi = document.body.classList.contains('lang-hi');
+  const card = document.getElementById('quiz-card');
+  if(quizIdx >= quizData.length){
+    card.innerHTML = `<div class="score-badge"><div class="n">${quizScore}/${quizData.length}</div>
+      <div style="font-weight:700; margin-top:6px;">${hi?'आप एक सुरक्षा चैंपियन हैं! 🏆':'You are a Suraksha Champion! 🏆'}</div>
+      <div class="btn-row"><button class="btn btn-primary" style="width:100%;" onclick="goTo('suraksha')">${hi?'सुरक्षा केंद्र पर वापस जाएं':'Back to Suraksha Kendra'}</button></div></div>`;
+    return;
+  }
+  const item = quizData[quizIdx];
+  let optsHtml='';
+  item.opts.forEach((o,i)=>{
+    optsHtml += `<button class="quiz-opt" id="opt-${i}" onclick="answerQuiz(${i})">${hi?o.hi:o.en}</button>`;
+  });
+  card.innerHTML = `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:6px;">${hi?'सवाल':'Question'} ${quizIdx+1}/${quizData.length}</div>
+    <div class="quiz-q">${hi?item.q.hi:item.q.en}</div>
+    <div id="quiz-opts">${optsHtml}</div>
+    <div id="quiz-fb-area"></div>`;
+}
+function answerQuiz(i){
+  const hi = document.body.classList.contains('lang-hi');
+  const item = quizData[quizIdx];
+  document.querySelectorAll('.quiz-opt').forEach((b,idx)=>{
+    b.disabled = true;
+    if(item.opts[idx].correct) b.classList.add('correct');
+    else if(idx===i) b.classList.add('wrong');
+  });
+  if(item.opts[i].correct) quizScore++;
+  document.getElementById('quiz-fb-area').innerHTML = `<div class="quiz-fb">${hi?item.fb.hi:item.fb.en}</div>
+    <button class="btn btn-primary" style="width:100%;" onclick="nextQuiz()">${hi?'अगला':'Next'}</button>`;
+}
+function nextQuiz(){ quizIdx++; renderQuiz(); }
+</script>
+</body>
+</html>
